@@ -28,11 +28,31 @@
  *   pi install npm:@NekoSekaiMoe/pi-ui
  */
 
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI, Theme, ThemeColor } from "@earendil-works/pi-coding-agent";
 import { makeReferenceEditorFactory } from "./editor.ts";
 import { installFooter } from "./footer.ts";
-import { installToolRenderers } from "./tools.ts";
+import { FRAME_STOPS, gradientText } from "./gradient.ts";
+import { installShellRenderer, installToolRenderers } from "./tools.ts";
 import { installWorking } from "./working.ts";
+
+const patchedThemes = new WeakSet<Theme>();
+const PI_THEME_KEY = Symbol.for("@earendil-works/pi-coding-agent:theme");
+
+function installResourceHeadingGradient(themeProxy: Theme): void {
+  // Pi exposes a forwarding Proxy to extensions. Patch the shared instance
+  // behind it so startup resources, which import the same global theme, see it.
+  const globalThemes = globalThis as typeof globalThis & { [PI_THEME_KEY]?: Theme };
+  const theme = globalThemes[PI_THEME_KEY] ?? themeProxy;
+  if (patchedThemes.has(theme)) return;
+  const originalFg = theme.fg.bind(theme);
+  theme.fg = (color: ThemeColor, text: string): string => {
+    if (color === "mdHeading" && /^\[[^\]\n]+\]$/.test(text)) {
+      return gradientText(text, FRAME_STOPS);
+    }
+    return originalFg(color, text);
+  };
+  patchedThemes.add(theme);
+}
 
 export default function (pi: ExtensionAPI) {
   // Register Codex-style tool renderers at load time. This overrides the
@@ -53,7 +73,10 @@ export default function (pi: ExtensionAPI) {
   // setters, not accumulating registrations, so calling them per start is safe.
   pi.on("session_start", async (_event, ctx) => {
     if (ctx.mode !== "tui") return;
-    ctx.ui.setEditorComponent(makeReferenceEditorFactory(ctx, pi));
-    installFooter(ctx);
+    const uiState = { shellMode: false };
+    installResourceHeadingGradient(ctx.ui.theme);
+    installShellRenderer(ctx.ui.theme);
+    ctx.ui.setEditorComponent(makeReferenceEditorFactory(ctx, pi, uiState));
+    installFooter(ctx, uiState);
   });
 }

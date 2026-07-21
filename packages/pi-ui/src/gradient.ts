@@ -3,6 +3,7 @@
 export type Rgb = readonly [number, number, number];
 
 export const RESET_FG = "\x1b[39m";
+export const RESET_BG = "\x1b[49m";
 
 /** Pink-to-cyan ramp used by the reference input frame. */
 export const FRAME_STOPS: readonly Rgb[] = [
@@ -21,6 +22,10 @@ export const WORKING_STOPS: readonly Rgb[] = [
 
 export function fgRgb(text: string, [r, g, b]: Rgb): string {
   return `\x1b[38;2;${r};${g};${b}m${text}${RESET_FG}`;
+}
+
+export function bgRgb(text: string, [r, g, b]: Rgb): string {
+  return `\x1b[48;2;${r};${g};${b}m${text}${RESET_BG}`;
 }
 
 function lerp(a: number, b: number, t: number): number {

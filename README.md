@@ -10,12 +10,14 @@ A yarn-workspaces monorepo. Each package under `packages/` is a self-contained p
 | --- | --- | --- |
 | [`@NekoSekaiMoe/pi-exit`](packages/pi-exit) | `/exit` | A friendly alias for the built-in `/quit` — gracefully shuts pi down. |
 | [`@NekoSekaiMoe/pi-init`](packages/pi-init) | `/init` | Generates a high-quality `AGENTS.md` contributor guide, replacing the auto-invoked `init` skill. |
+| [`@NekoSekaiMoe/pi-ui`](packages/pi-ui) | — | Reskins the interactive TUI with a Codex-style bordered input, model/context toolbar, gradient working indicator, and flat tool-call rows. |
 
 ## Install
 
 ```bash
 pi install npm:@NekoSekaiMoe/pi-exit
 pi install npm:@NekoSekaiMoe/pi-init
+pi install npm:@NekoSekaiMoe/pi-ui
 ```
 
 ## Development

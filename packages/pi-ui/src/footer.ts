@@ -8,6 +8,7 @@ import type {
 } from "@earendil-works/pi-coding-agent";
 import type { Component, TUI } from "@earendil-works/pi-tui";
 import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import type { ReferenceUiState } from "./state.ts";
 
 function formatTokens(count: number): string {
   if (count < 1000) return count.toString();
@@ -67,21 +68,36 @@ function sanitizeStatus(text: string): string {
   return text.replace(/[\r\n\t]/g, " ").trim();
 }
 
-function renderLeftToolbar(footerData: ReadonlyFooterDataProvider, theme: Theme): string {
+function formatCwd(cwd: string): string {
+  const home = process.env.HOME ?? process.env.USERPROFILE;
+  if (home && (cwd === home || cwd.startsWith(`${home}/`) || cwd.startsWith(`${home}\\`))) {
+    return `~${cwd.slice(home.length)}`;
+  }
+  return cwd;
+}
+
+function renderLeftToolbar(
+  ctx: ExtensionContext,
+  footerData: ReadonlyFooterDataProvider,
+  theme: Theme,
+  uiState: ReferenceUiState,
+): string {
   const statuses = [...footerData.getExtensionStatuses().entries()]
     .sort(([left], [right]) => left.localeCompare(right))
     .map(([, text]) => sanitizeStatus(text))
     .filter(Boolean);
-  if (statuses.length > 0) return statuses.join("  ");
-
   const branch = footerData.getGitBranch();
-  return branch ? theme.fg("dim", `(${branch})`) : "";
+  const location = theme.fg("dim", `${formatCwd(ctx.cwd)}${branch ? ` (${branch})` : ""}`);
+  const shellMode = uiState.shellMode ? ` ${theme.fg("warning", "shell mode")}` : "";
+  const statusText = statuses.length > 0 ? `  ${theme.fg("dim", statuses.join("  "))}` : "";
+  return location + shellMode + statusText;
 }
 
 function renderToolbarLine(
   ctx: ExtensionContext,
   theme: Theme,
   footerData: ReadonlyFooterDataProvider,
+  uiState: ReferenceUiState,
   width: number,
 ): string {
   const right = renderMetrics(ctx, theme);
@@ -89,19 +105,23 @@ function renderToolbarLine(
   if (rightWidth >= width) return truncateToWidth(right, width, theme.fg("dim", "…"));
 
   const availableLeft = Math.max(0, width - rightWidth - 2);
-  const left = truncateToWidth(renderLeftToolbar(footerData, theme), availableLeft, theme.fg("dim", "…"));
+  const left = truncateToWidth(
+    renderLeftToolbar(ctx, footerData, theme, uiState),
+    availableLeft,
+    theme.fg("dim", "…"),
+  );
   const padding = " ".repeat(Math.max(1, width - visibleWidth(left) - rightWidth));
   return left + padding + right;
 }
 
-export function installFooter(ctx: ExtensionContext): void {
+export function installFooter(ctx: ExtensionContext, uiState: ReferenceUiState): void {
   ctx.ui.setFooter((tui: TUI, theme: Theme, footerData: ReadonlyFooterDataProvider): Component & { dispose?(): void } => {
     const unsubscribe = footerData.onBranchChange(() => tui.requestRender());
     return {
       dispose: unsubscribe,
       invalidate() {},
       render(width: number): string[] {
-        return width > 0 ? [renderToolbarLine(ctx, theme, footerData, width)] : [];
+        return width > 0 ? [renderToolbarLine(ctx, theme, footerData, uiState, width)] : [];
       },
     };
   });

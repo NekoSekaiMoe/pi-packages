@@ -8,6 +8,7 @@ import {
   createLsToolDefinition,
   createReadToolDefinition,
   createWriteToolDefinition,
+  BashExecutionComponent,
   type ExtensionAPI,
   type Theme,
   type ToolDefinition,
@@ -29,6 +30,18 @@ interface RenderContext {
   isPartial: boolean;
   isError: boolean;
 }
+
+interface BashComponentState {
+  status?: "running" | "complete" | "error" | "cancelled";
+  exitCode?: number;
+  expanded?: boolean;
+  getCommand(): string;
+  getOutput(): string;
+}
+
+type ComponentRender = (this: BashComponentState, width: number) => string[];
+
+const SHELL_ORIGINAL_RENDER = Symbol.for("@NekoSekaiMoe/pi-ui:bash-render");
 
 const ANSI_PATTERN = /\x1b\[[0-?]*[ -/]*[@-~]/g;
 const DOT_RUNNING: readonly [number, number, number] = [148, 148, 158];
@@ -113,8 +126,12 @@ function renderResultText(
   if (options.isPartial) return "";
 
   const output = textOutput(result);
+  return renderOutputText(output, options.expanded, theme);
+}
+
+function renderOutputText(output: string, expanded: boolean, theme: Theme): string {
   const lines = output ? output.split("\n") : ["(no output)"];
-  const visibleLines = options.expanded ? lines : [lines.find((line) => line.trim().length > 0) ?? "(no output)"];
+  const visibleLines = expanded ? lines : [lines.find((line) => line.trim().length > 0) ?? "(no output)"];
 
   return visibleLines
     .map((line, index) => {
@@ -122,6 +139,59 @@ function renderResultText(
       return branch + theme.fg("toolOutput", line);
     })
     .join("\n");
+}
+
+function renderShellExecution(component: BashComponentState, width: number, theme: Theme): string[] {
+  if (width <= 0) return [];
+
+  const status = component.status;
+  if (!status) throw new Error("Unsupported BashExecutionComponent state");
+  const isPartial = status === "running";
+  const isError = status === "error";
+  const title = renderTitle(
+    ROWS.bash!,
+    { command: component.getCommand() },
+    { isPartial, isError, lastComponent: undefined },
+    theme,
+  );
+
+  let content = title;
+  if (!isPartial) {
+    let output = component.getOutput().replace(ANSI_PATTERN, "").trim();
+    if (!output && status === "error") output = `(exit ${component.exitCode ?? "?"})`;
+    if (!output && status === "cancelled") output = "(cancelled)";
+    content += `\n${renderOutputText(output, component.expanded === true, theme)}`;
+  }
+
+  // BashExecutionComponent normally starts with a spacer. Preserve that rhythm
+  // while replacing its bordered body with the same flat rows as tool calls.
+  return ["", ...new Text(content, 0, 0).render(width)];
+}
+
+/**
+ * User `!` commands are rendered by Pi's separate BashExecutionComponent, so
+ * tool renderers cannot affect them. The component is exported by Pi, but its
+ * shell is not otherwise configurable; replace only render() and retain the
+ * original as a compatibility fallback when its shape changes.
+ */
+export function installShellRenderer(theme: Theme): void {
+  try {
+    const prototype = BashExecutionComponent.prototype as unknown as Record<PropertyKey, unknown>;
+    const currentRender = prototype.render;
+    if (typeof currentRender !== "function") return;
+
+    const originalRender = (prototype[SHELL_ORIGINAL_RENDER] as ComponentRender | undefined) ?? currentRender;
+    prototype[SHELL_ORIGINAL_RENDER] = originalRender;
+    prototype.render = function (this: BashComponentState, width: number): string[] {
+      try {
+        return renderShellExecution(this, width, theme);
+      } catch {
+        return originalRender.call(this, width);
+      }
+    } satisfies ComponentRender;
+  } catch {
+    // Keep Pi's bordered shell when this internal component changes shape.
+  }
 }
 
 function codexifyTool(name: string, cwd: string): ToolDefinition<any, any, any> | undefined {
