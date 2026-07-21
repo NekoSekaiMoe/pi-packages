@@ -1,0 +1,17 @@
+{
+  "name": "pi-packages",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pi coding agent extensions by @NekoSekaiMoe",
+  "license": "BSD-2-Clause",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "tsgo --noEmit -p tsconfig.base.json"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@typescript/native-preview": "^7.0.0-dev.20260707.2"
+  }
+}

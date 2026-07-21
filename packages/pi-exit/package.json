@@ -1,0 +1,27 @@
+{
+  "name": "@NekoSekaiMoe/pi-exit",
+  "version": "0.1.0",
+  "description": "Adds an /exit command to the Pi coding agent — a friendly alias for /quit that gracefully shuts pi down",
+  "license": "BSD-2-Clause",
+  "author": "NekoSekaiMoe",
+  "keywords": [
+    "pi",
+    "pi-coding-agent",
+    "pi-extension",
+    "pi-package",
+    "exit",
+    "quit"
+  ],
+  "files": [
+    "src/",
+    "README.md"
+  ],
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  }
+}

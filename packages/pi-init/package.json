@@ -1,0 +1,27 @@
+{
+  "name": "@NekoSekaiMoe/pi-init",
+  "version": "0.1.0",
+  "description": "Adds an /init command to the Pi coding agent that generates a high-quality AGENTS.md contributor guide — a command-driven replacement for the init skill",
+  "license": "BSD-2-Clause",
+  "author": "NekoSekaiMoe",
+  "keywords": [
+    "pi",
+    "pi-coding-agent",
+    "pi-extension",
+    "pi-package",
+    "init",
+    "agents-md"
+  ],
+  "files": [
+    "src/",
+    "README.md"
+  ],
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  }
+}
