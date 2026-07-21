@@ -1,0 +1,40 @@
+{
+  "name": "@NekoSekaiMoe/pi-ui",
+  "version": "0.1.0",
+  "description": "Reskins Pi with an open gradient input frame, compact status toolbar, animated Working shimmer, and flat Codex-style tool rows",
+  "license": "BSD-2-Clause",
+  "author": "NekoSekaiMoe",
+  "keywords": [
+    "pi",
+    "pi-coding-agent",
+    "pi-extension",
+    "pi-package",
+    "ui",
+    "theme",
+    "codex"
+  ],
+  "files": [
+    "src/",
+    "README.md"
+  ],
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "dependencies": {
+    "@ff-labs/pi-fff": "^0.10.1",
+    "@juicesharp/rpiv-advisor": "^2.0.0",
+    "@juicesharp/rpiv-ask-user-question": "^2.0.0",
+    "pi-dynamic-context-pruning": "^0.1.0",
+    "pi-mcp-adapter": "^2.11.0",
+    "pi-smart-fetch": "^0.3.12",
+    "pi-subagents": "^0.35.1",
+    "pi-web-access": "^0.13.0",
+    "version": "^0.1.2",
+    "view": "^1.1.1"
+  }
+}
