@@ -313,7 +313,7 @@
     typebox "1.1.38"
     yaml "2.9.0"
 
-"@earendil-works/pi-ai@*", "@earendil-works/pi-ai@^0.81.0", "@earendil-works/pi-ai@>=0.74.0":
+"@earendil-works/pi-ai@*", "@earendil-works/pi-ai@^0.81.0":
   version "0.81.0"
   resolved "https://registry.npmmirror.com/@earendil-works/pi-ai/-/pi-ai-0.81.0.tgz"
   integrity sha512-n3lDV1Px/2BOp86rUJkoHcXuQ6uf7711VEtSjE5gTwrnPeMAEjzV3LnbQ3wTF9bUxl253Igi3U35U1CMF5POng==
@@ -345,7 +345,7 @@
     partial-json "^0.1.7"
     typebox "^1.1.24"
 
-"@earendil-works/pi-coding-agent@*", "@earendil-works/pi-coding-agent@>=0.74.0":
+"@earendil-works/pi-coding-agent@*":
   version "0.81.0"
   resolved "https://registry.npmmirror.com/@earendil-works/pi-coding-agent/-/pi-coding-agent-0.81.0.tgz"
   integrity sha512-2p0Dnx+3fkPLga8M82eg14ZYNLcFLhqxxKyVVfqUSIio9Xx4p7UjvJtopx/6PTeJKmdJl1/xOm/c02AFcJ+l/g==
@@ -371,7 +371,7 @@
   optionalDependencies:
     "@mariozechner/clipboard" "0.3.9"
 
-"@earendil-works/pi-tui@*", "@earendil-works/pi-tui@^0.81.0", "@earendil-works/pi-tui@>=0.74.0":
+"@earendil-works/pi-tui@*", "@earendil-works/pi-tui@^0.81.0":
   version "0.81.0"
   resolved "https://registry.npmmirror.com/@earendil-works/pi-tui/-/pi-tui-0.81.0.tgz"
   integrity sha512-vdrrV//CldG3Dt20vj+iCRcHOlPwxlOBJwwLg1KE/92IO+TlEwbf4uwKXgFZHGVh9lEJXtYsKzIRb/nHw5YuAA==
@@ -551,11 +551,6 @@
   resolved "https://registry.npmmirror.com/@mozilla/readability/-/readability-0.6.0.tgz"
   integrity sha512-juG5VWh4qAivzTAeMzvY9xs9HY5rAcr2E4I7tiSSCokRFi7XIZCAu92ZkSTsIj1OPceCifL3cpfteP3pDT9/QQ==
 
-"@narumitw/pi-plan-mode@^0.24.0":
-  version "0.24.0"
-  resolved "https://registry.npmmirror.com/@narumitw/pi-plan-mode/-/pi-plan-mode-0.24.0.tgz"
-  integrity sha512-yMSSzi3QieR93NgfT5s307r8OnuIXo/x1fUQ2g4ZxkDAUhpoD9l3F94z5IUa1Di+EewS7n6xIoVahvZyhe7lmQ==
-
 "@NekoSekaiMoe/pi-exit@file:/home/user/pi-packages/packages/pi-exit":
   version "0.1.0"
   resolved "file:packages/pi-exit"
@@ -571,12 +566,8 @@
     "@ff-labs/pi-fff" "^0.10.1"
     "@juicesharp/rpiv-advisor" "^2.0.0"
     "@juicesharp/rpiv-ask-user-question" "^2.0.0"
-    "@narumitw/pi-plan-mode" "^0.24.0"
     pi-dynamic-context-pruning "^0.1.0"
-    pi-markdown-preview "^0.10.0"
     pi-mcp-adapter "^2.11.0"
-    pi-rewind "^0.5.0"
-    pi-simplify "^0.2.3"
     pi-smart-fetch "^0.3.12"
     pi-subagents "^0.35.1"
     pi-web-access "^0.13.0"
@@ -663,7 +654,7 @@
   resolved "https://registry.npmmirror.com/@silvia-odwyer/photon-node/-/photon-node-0.3.4.tgz"
   integrity sha512-bnly4BKB3KDTFxrUIcgCLbaeVVS8lrAkri1pEzskpmxu9MdfGQTy8b8EgcD83ywD3RPMsIulY8xJH5Awa+t9fA==
 
-"@sinclair/typebox@*", "@sinclair/typebox@^0.34.0", "@sinclair/typebox@^0.34.49":
+"@sinclair/typebox@*", "@sinclair/typebox@^0.34.49":
   version "0.34.52"
   resolved "https://registry.npmmirror.com/@sinclair/typebox/-/typebox-0.34.52.tgz"
   integrity sha512-XiMQh7qqVlxZzcVD+kkGMNGMzcTrDMLWI7S4x7z1MkCkbDPrekpZXEUK0eZqZFMuHQg2a2DZOcDIh9o5v3Gonw==
@@ -1292,16 +1283,7 @@ domhandler@2.3:
   dependencies:
     domelementtype "1"
 
-domutils@^3.0.1, domutils@^3.1.0:
-  version "3.2.2"
-  resolved "https://registry.npmmirror.com/domutils/-/domutils-3.2.2.tgz"
-  integrity sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==
-  dependencies:
-    dom-serializer "^2.0.0"
-    domelementtype "^2.3.0"
-    domhandler "^5.0.3"
-
-domutils@^3.2.2:
+domutils@^3.0.1, domutils@^3.1.0, domutils@^3.2.2:
   version "3.2.2"
   resolved "https://registry.npmmirror.com/domutils/-/domutils-3.2.2.tgz"
   integrity sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==
@@ -1384,7 +1366,12 @@ entities@^1.1.1, entities@~1.1.1:
   resolved "https://registry.npmmirror.com/entities/-/entities-1.1.2.tgz"
   integrity sha512-f2LZMYl1Fzu7YSBKg+RoROelpOaNrcGmE9AZubeDfrCEia483oW4MI4VyFd5VNHIgQ/7qm1I0wUHK1eJnn2y2w==
 
-entities@^4.2.0, entities@^4.5.0:
+entities@^4.2.0:
+  version "4.5.0"
+  resolved "https://registry.npmmirror.com/entities/-/entities-4.5.0.tgz"
+  integrity sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==
+
+entities@^4.5.0:
   version "4.5.0"
   resolved "https://registry.npmmirror.com/entities/-/entities-4.5.0.tgz"
   integrity sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==
@@ -2016,12 +2003,7 @@ marked@^0.3.4:
   resolved "https://registry.npmmirror.com/marked/-/marked-0.3.19.tgz"
   integrity sha512-ea2eGWOqNxPcXv8dyERdSr/6FmzvWwzjMxpfGB/sbMccXoct+xY+YukPD+QTUZwyvK7BZwcr4m21WBOW41pAkg==
 
-marked@^15.0.12:
-  version "15.0.12"
-  resolved "https://registry.npmmirror.com/marked/-/marked-15.0.12.tgz"
-  integrity sha512-8dD6FusOQSrpv9Z1rdNMdlSgQOIP880DHqnohobOmYLElGEqAL/JvxvuxZO16r4HtjTlfPRDC1hbvxC9dPN2nA==
-
-marked@15.0.12:
+marked@^15.0.12, marked@15.0.12:
   version "15.0.12"
   resolved "https://registry.npmmirror.com/marked/-/marked-15.0.12.tgz"
   integrity sha512-8dD6FusOQSrpv9Z1rdNMdlSgQOIP880DHqnohobOmYLElGEqAL/JvxvuxZO16r4HtjTlfPRDC1hbvxC9dPN2nA==
@@ -2244,15 +2226,15 @@ pend@~1.2.0:
   resolved "https://registry.npmmirror.com/pend/-/pend-1.2.0.tgz"
   integrity sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==
 
-pi-dynamic-context-pruning@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.npmmirror.com/pi-dynamic-context-pruning/-/pi-dynamic-context-pruning-0.1.0.tgz"
-  integrity sha512-3wF5Qjur+Z8isKHvwOMuZpcgwsJ48+7fNwskIH9zaDf/n/xI8X2ShaGiSEjlnqO+AXynppWXFsqGUVnBel5zHg==
+pi-dynamic-context-pruning@^0.1.0, pi-dynamic-context-pruning@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.npmmirror.com/pi-dynamic-context-pruning/-/pi-dynamic-context-pruning-0.1.1.tgz"
+  integrity sha512-Lce2isn6DeBnnZl0tZVAVH1GDL8/KlcLluRcPf/zir5rMim4ZU2DEhOWf68x29/bO543TnJixhSsAoNU2fBXag==
 
-pi-markdown-preview@^0.10.0:
-  version "0.10.0"
-  resolved "https://registry.npmmirror.com/pi-markdown-preview/-/pi-markdown-preview-0.10.0.tgz"
-  integrity sha512-lAbmO8KUoe83MTRphWMU++AOY7iAi8PVE+V0prwdJqRl7dxgh3h1QSeayYiXJM59X6v4mUUQIau9fB8ZiA2O6A==
+pi-markdown-preview@^0.10.1:
+  version "0.10.1"
+  resolved "https://registry.npmmirror.com/pi-markdown-preview/-/pi-markdown-preview-0.10.1.tgz"
+  integrity sha512-mrVNSWTjp3/+QRFyH0LMPADiqzbOroevhmBoWe/mrGP2DAcUxkAVTp1w3MIruJC1Av2EqAsMvYj/fMYa+RsoVw==
   dependencies:
     puppeteer-core "^24.22.3"
 
@@ -2269,16 +2251,6 @@ pi-mcp-adapter@^2.11.0:
     recheck "^4.5.0"
     typebox "^1.1.24"
     zod "^3.25.0 || ^4.0.0"
-
-pi-rewind@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.npmmirror.com/pi-rewind/-/pi-rewind-0.5.0.tgz"
-  integrity sha512-nW6HVg3II7+DhMZAsUX7EJPT2/IgPGXWGDntppS1cyYLfNaVgeBU5bRW7e1acHk1LW18EWdMh6475CRh0PAnGQ==
-
-pi-simplify@^0.2.3:
-  version "0.2.3"
-  resolved "https://registry.npmmirror.com/pi-simplify/-/pi-simplify-0.2.3.tgz"
-  integrity sha512-9dxsXiGmO7DmjguC4Bk/lu7IYlYt0x1m2VneUpIGSQspx4BtshBgt+Vb8xvoxXc/Ugif7/sdwcbf7TgULqiSHg==
 
 pi-smart-fetch@^0.3.12:
   version "0.3.12"

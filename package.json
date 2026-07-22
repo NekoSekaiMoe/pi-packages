@@ -13,5 +13,11 @@
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "*",
     "@typescript/native-preview": "^7.0.0-dev.20260707.2"
+  },
+  "dependencies": {
+    "pi-dynamic-context-pruning": "^0.1.1",
+    "pi-markdown-preview": "^0.10.1",
+    "version": "^0.1.2",
+    "view": "^1.1.1"
   }
 }
