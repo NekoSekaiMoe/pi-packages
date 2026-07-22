@@ -8,7 +8,7 @@
  *     context, token, and cost data,
  *   - an animated "Working (Ns · esc to interrupt)" shimmer,
  *   - flat Codex-style tool-call rows (`● Ran <cmd>` / `└ <output>`) for the
- *     built-in tools.
+ *     built-in tools and selected extension tools.
  *
  * Wiring only. Each concern lives in its own module and is installed against
  * documented ExtensionAPI / ExtensionUIContext methods:
@@ -32,7 +32,7 @@ import type { ExtensionAPI, Theme, ThemeColor } from "@earendil-works/pi-coding-
 import { makeReferenceEditorFactory } from "./editor.ts";
 import { installFooter } from "./footer.ts";
 import { FRAME_STOPS, gradientText } from "./gradient.ts";
-import { installShellRenderer, installToolRenderers } from "./tools.ts";
+import { installExternalToolRenderers, installShellRenderer, installToolRenderers } from "./tools.ts";
 import { installWorking } from "./working.ts";
 
 const patchedThemes = new WeakSet<Theme>();
@@ -55,6 +55,11 @@ function installResourceHeadingGradient(themeProxy: Theme): void {
 }
 
 export default function (pi: ExtensionAPI) {
+  // Patch renderer lookup before any restored tool components are created.
+  // This changes only presentation; extension-owned execute functions remain
+  // registered and invoked as-is.
+  installExternalToolRenderers();
+
   // Register Codex-style tool renderers at load time. This overrides the
   // built-in tools by name; if a built-in factory changes shape across Pi
   // versions, installToolRenderers swallows the error per-tool and leaves that

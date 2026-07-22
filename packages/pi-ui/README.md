@@ -41,13 +41,24 @@ built on documented `ExtensionAPI` / `ExtensionUIContext` methods:
 | `editor.ts`   | `ctx.ui.setEditorComponent()`                       | Open frame + embedded model toolbar             |
 | `footer.ts`   | `ctx.ui.setFooter()`                                | Extension statuses + usage toolbar              |
 | `working.ts`  | `ctx.ui.setWorkingIndicator()` + `setWorkingMessage()` | Animated shimmer + live counter              |
-| `tools.ts`    | `pi.registerTool()`                                 | Re-registers built-ins with Codex renderers     |
+| `tools.ts`    | `pi.registerTool()` + `ToolExecutionComponent`      | Flat tool rows and edit/write diffs             |
 | `gradient.ts` | —                                                   | Truecolor gradient helpers                      |
 
 The tool-row restyle re-registers a tool of the **same name** for each built-in
 (`bash`, `read`, `edit`, `write`, `grep`, `find`, `ls`). It spreads the built-in
 definition first, so the real `execute`, parameters, and prompt metadata are
 reused verbatim — only `renderShell`, `renderCall`, and `renderResult` change.
+`write` additionally captures the previous file contents so its result can carry
+the same display-oriented diff that `edit` already returns. Diff rows include
+`(+added -removed)` totals and collapse long changes behind the normal tool
+expand shortcut.
+
+Shell results keep an up-to-seven-line collapsed preview (three leading lines,
+a hidden line count, and three trailing lines when output is longer). `fffind`, `ask_user_question`, and
+`subagent` are registered by their owning extensions, so their definitions and
+execution stay untouched. Pi UI only redirects their TUI renderer lookups to the
+same flat rows used by the built-in tools; subagent activity is presented as an
+`Explored` list.
 
 ## Version coupling
 
@@ -56,10 +67,12 @@ extension contract:
 
 - the `create<Tool>ToolDefinition(cwd)` factories exported from
   `@earendil-works/pi-coding-agent`, and
+- the private renderer lookup methods on the exported `ToolExecutionComponent`
+  used to normalize externally registered tool rows, and
 - the `ToolRenderContext` flags (`executionStarted`, `argsComplete`, `isPartial`,
   `isError`).
 
-Verified against **pi-coding-agent 0.80.10** (this repo's pinned version). Each
+Verified against **pi-coding-agent 0.81.0** (this repo's pinned version). Each
 tool swap is wrapped in `try`/`catch`: if a factory import or shape changes, that
 tool silently keeps its built-in rendering rather than breaking execution. The
 gradient indicator, footer, and bordered editor use only stable public APIs.
