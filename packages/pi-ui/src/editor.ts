@@ -82,7 +82,9 @@ export function makeReferenceEditorFactory(ctx: ExtensionContext, pi: ExtensionA
       }
 
       override handleInput(data: string): void {
-        super.handleInput(data);
+        // Support pasting multi-line text by converting newlines to spaces
+        const normalized = data.replace(/[\r\n]+/g, ' ');
+        super.handleInput(normalized);
         this.syncShellMode();
       }
 
