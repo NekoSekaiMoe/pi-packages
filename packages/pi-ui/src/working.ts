@@ -58,7 +58,13 @@ export function installWorking(pi: ExtensionAPI): () => void {
   pi.on("agent_settled", (_event, ctx) => {
     stop();
     if (ctx.mode !== "tui") return;
-    ctx.ui.setWorkingMessage();
+    const elapsed = Date.now() - startedAt;
+    const elapsedText = formatElapsed(elapsed);
+    ctx.ui.setWorkingMessage(ctx.ui.theme.fg("dim", `Completed in ${elapsedText}`));
+    // Clear the message after 3 seconds
+    setTimeout(() => {
+      if (ctx.mode === "tui") ctx.ui.setWorkingMessage();
+    }, 3000);
   });
 
   pi.on("session_shutdown", () => stop());
