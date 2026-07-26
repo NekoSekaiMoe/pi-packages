@@ -3,8 +3,6 @@
 import {
   createBashToolDefinition,
   createEditToolDefinition,
-  createFindToolDefinition,
-  createGrepToolDefinition,
   createLsToolDefinition,
   createReadToolDefinition,
   createWriteToolDefinition,
@@ -79,6 +77,28 @@ const ROWS: Record<string, RowConfig> = {
   // names and default shells are intentionally normalized to the same row
   // shape as the built-in search/question tools.
   fffind: { running: "Finding", done: "Found", primary: (args) => str(args.pattern) },
+  ffgrep: { running: "Searching", done: "Searched", primary: (args) => str(args.pattern) },
+  search: {
+    running: "Searching",
+    done: "Searched",
+    primary: (args) => {
+      if (typeof args.query === "string") return args.query;
+      return Array.isArray(args.queries) ? `${args.queries.length} queries` : "";
+    },
+  },
+  web_search: {
+    running: "Searching",
+    done: "Searched",
+    primary: (args) => {
+      if (typeof args.query === "string") return args.query;
+      return Array.isArray(args.queries) ? `${args.queries.length} queries` : "";
+    },
+  },
+  batch_web_fetch: {
+    running: "Fetching",
+    done: "Fetched",
+    primary: (args) => Array.isArray(args.requests) ? `${args.requests.length} URLs` : "",
+  },
   ask_user_question: {
     running: "Asking",
     done: "Asked",
@@ -97,8 +117,6 @@ const FACTORIES: Record<string, (cwd: string) => ToolDefinition<any, any, any>> 
   read: (cwd) => createReadToolDefinition(cwd) as ToolDefinition<any, any, any>,
   edit: (cwd) => createEditToolDefinition(cwd) as ToolDefinition<any, any, any>,
   write: (cwd) => createWriteToolDefinition(cwd) as ToolDefinition<any, any, any>,
-  grep: (cwd) => createGrepToolDefinition(cwd) as ToolDefinition<any, any, any>,
-  find: (cwd) => createFindToolDefinition(cwd) as ToolDefinition<any, any, any>,
   ls: (cwd) => createLsToolDefinition(cwd) as ToolDefinition<any, any, any>,
 };
 
@@ -464,23 +482,29 @@ function renderShellExecution(component: BashComponentState, width: number, them
  * shell is not otherwise configurable; replace only render() and retain the
  * original as a compatibility fallback when its shape changes.
  */
-export function installShellRenderer(theme: Theme): void {
+export function installShellRenderer(theme: Theme): () => void {
+  const noop = () => {};
   try {
     const prototype = BashExecutionComponent.prototype as unknown as Record<PropertyKey, unknown>;
     const currentRender = prototype.render;
-    if (typeof currentRender !== "function") return;
+    if (typeof currentRender !== "function") return noop;
 
     const originalRender = (prototype[SHELL_ORIGINAL_RENDER] as ComponentRender | undefined) ?? currentRender;
     prototype[SHELL_ORIGINAL_RENDER] = originalRender;
-    prototype.render = function (this: BashComponentState, width: number): string[] {
+    const patchedRender: ComponentRender = function (this: BashComponentState, width: number): string[] {
       try {
         return renderShellExecution(this, width, theme);
       } catch {
         return originalRender.call(this, width);
       }
-    } satisfies ComponentRender;
+    };
+    prototype.render = patchedRender;
+    return () => {
+      if (prototype.render === patchedRender) prototype.render = originalRender;
+    };
   } catch {
     // Keep Pi's bordered shell when this internal component changes shape.
+    return noop;
   }
 }
 
@@ -494,18 +518,31 @@ interface ToolExecutionOriginals {
   getRenderShell: (this: ToolExecutionState) => unknown;
 }
 
-function isExternalFlatTool(name: unknown): name is "fffind" | "ask_user_question" | "subagent" {
-  return name === "fffind" || name === "ask_user_question" || name === "subagent";
+const EXTERNAL_FLAT_TOOLS = new Set([
+  "grep",
+  "find",
+  "ffgrep",
+  "fffind",
+  "search",
+  "web_search",
+  "batch_web_fetch",
+  "ask_user_question",
+  "subagent",
+]);
+
+function isExternalFlatTool(name: unknown): name is keyof typeof ROWS {
+  return typeof name === "string" && EXTERNAL_FLAT_TOOLS.has(name);
 }
 
 /**
- * FFF, questionnaire, and subagent extensions register their own definitions.
+ * Search, FFF, questionnaire, and subagent extensions register their own definitions.
  * Their execute functions must remain untouched, but their default render shell
  * is a bordered block and their labels expose the raw extension names. Redirect
- * only these three renderer lookups on Pi's public component class so they use
- * the same flat row as built-in tools.
+ * these renderer lookups on Pi's public component class so they use the same
+ * flat row as built-in tools.
  */
-export function installExternalToolRenderers(): void {
+export function installExternalToolRenderers(): () => void {
+  const noop = () => {};
   try {
     const prototype = ToolExecutionComponent.prototype as unknown as Record<PropertyKey, unknown> & ToolExecutionState;
     const currentCall = prototype.getCallRenderer;
@@ -515,7 +552,7 @@ export function installExternalToolRenderers(): void {
       typeof currentCall !== "function" ||
       typeof currentResult !== "function" ||
       typeof currentShell !== "function"
-    ) return;
+    ) return noop;
 
     const originals =
       (prototype[TOOL_EXECUTION_ORIGINALS] as ToolExecutionOriginals | undefined) ?? {
@@ -525,7 +562,7 @@ export function installExternalToolRenderers(): void {
       };
     prototype[TOOL_EXECUTION_ORIGINALS] = originals;
 
-    prototype.getCallRenderer = function (this: ToolExecutionState): unknown {
+    const patchedCall: ToolExecutionOriginals["getCallRenderer"] = function (this: ToolExecutionState): unknown {
       if (!isExternalFlatTool(this.toolName)) return originals.getCallRenderer.call(this);
       return (args: unknown, theme: Theme, context: RenderContext): Text => {
         const config = ROWS[this.toolName!];
@@ -534,7 +571,7 @@ export function installExternalToolRenderers(): void {
         return text;
       };
     };
-    prototype.getResultRenderer = function (this: ToolExecutionState): unknown {
+    const patchedResult: ToolExecutionOriginals["getResultRenderer"] = function (this: ToolExecutionState): unknown {
       if (!isExternalFlatTool(this.toolName)) return originals.getResultRenderer.call(this);
       return (
         result: AgentToolResult<unknown>,
@@ -550,11 +587,22 @@ export function installExternalToolRenderers(): void {
         return text;
       };
     };
-    prototype.getRenderShell = function (this: ToolExecutionState): unknown {
+    const patchedShell: ToolExecutionOriginals["getRenderShell"] = function (this: ToolExecutionState): unknown {
       return isExternalFlatTool(this.toolName) ? "self" : originals.getRenderShell.call(this);
+    };
+
+    prototype.getCallRenderer = patchedCall;
+    prototype.getResultRenderer = patchedResult;
+    prototype.getRenderShell = patchedShell;
+
+    return () => {
+      if (prototype.getCallRenderer === patchedCall) prototype.getCallRenderer = originals.getCallRenderer;
+      if (prototype.getResultRenderer === patchedResult) prototype.getResultRenderer = originals.getResultRenderer;
+      if (prototype.getRenderShell === patchedShell) prototype.getRenderShell = originals.getRenderShell;
     };
   } catch {
     // Keep Pi's default component when its private method layout changes.
+    return noop;
   }
 }
 

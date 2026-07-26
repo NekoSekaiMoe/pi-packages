@@ -28,10 +28,12 @@
   "dependencies": {
     "@ff-labs/pi-fff": "^0.10.1",
     "@juicesharp/rpiv-advisor": "^2.0.0",
-    "@juicesharp/rpiv-ask-user-question": "^2.0.0",
+    "@juicesharp/rpiv-ask-user-question": "^2.1.0",
     "pi-dynamic-context-pruning": "^0.1.0",
     "pi-mcp-adapter": "^2.11.0",
+    "pi-simplify": "^0.2.3",
     "pi-smart-fetch": "^0.3.12",
+    "pi-sub-agent": "^0.1.5",
     "pi-subagents": "^0.35.1",
     "pi-web-access": "^0.13.0",
     "version": "^0.1.2",

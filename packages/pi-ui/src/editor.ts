@@ -7,7 +7,7 @@ import {
   type KeybindingsManager,
 } from "@earendil-works/pi-coding-agent";
 import type { EditorTheme, TUI } from "@earendil-works/pi-tui";
-import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import { Editor, truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
 import { bgRgb, FRAME_STOPS, gradientText } from "./gradient.ts";
 import type { ReferenceUiState } from "./state.ts";
 
@@ -67,6 +67,8 @@ function renderModelToolbar(ctx: ExtensionContext, pi: ExtensionAPI, width: numb
 export function makeReferenceEditorFactory(ctx: ExtensionContext, pi: ExtensionAPI, uiState: ReferenceUiState) {
   return (tui: TUI, theme: EditorTheme, keybindings: KeybindingsManager): CustomEditor => {
     class ReferenceEditor extends CustomEditor {
+      private pasteInProgress = false;
+
       constructor() {
         super(tui, theme, keybindings, { paddingX: 0 });
         // The TUI defaults to differential redraws that may leave old rows behind
@@ -82,6 +84,18 @@ export function makeReferenceEditorFactory(ctx: ExtensionContext, pi: ExtensionA
       }
 
       override handleInput(data: string): void {
+        if (data.includes("\x1b[200~")) this.pasteInProgress = true;
+        const isPasteInput = this.pasteInProgress;
+        if (data.includes("\x1b[201~")) this.pasteInProgress = false;
+
+        if (isPasteInput) {
+          // CustomEditor checks app shortcuts before Editor sees bracketed paste.
+          // Bypass that layer so newlines cannot submit separate queued prompts.
+          Editor.prototype.handleInput.call(this, data);
+          this.syncShellMode();
+          return;
+        }
+
         super.handleInput(data);
         this.syncShellMode();
       }

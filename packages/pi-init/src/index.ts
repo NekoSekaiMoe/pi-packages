@@ -18,7 +18,7 @@
  *   pi install npm:@NekoSekaiMoe/pi-init
  */
 
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { createEditToolDefinition, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 /** The core AGENTS.md generation instructions, ported from the init skill. */
 const INIT_PROMPT = `Generate a file named AGENTS.md that serves as a contributor guide for this repository.
@@ -58,6 +58,20 @@ Summarize commit message conventions found in the project's Git history. Outline
 (Optional) Add other sections if relevant, such as Security & Configuration Tips, Architecture Overview, or Agent-Specific Instructions.`;
 
 export default function (pi: ExtensionAPI) {
+  const edit = createEditToolDefinition(process.cwd());
+  pi.registerTool({
+    ...edit,
+    name: "apply_patch",
+    label: "apply_patch",
+    promptSnippet: "Make precise file edits with exact text replacement, including multiple disjoint edits in one call",
+    promptGuidelines: [
+      "Use apply_patch for precise changes (edits[].oldText must match exactly)",
+      "When changing multiple separate locations in one file, use one apply_patch call with multiple entries in edits[] instead of multiple calls",
+      "Each apply_patch edits[].oldText is matched against the original file, not after earlier edits are applied. Do not emit overlapping or nested edits. Merge nearby changes into one edit.",
+      "Keep apply_patch edits[].oldText as small as possible while still being unique in the file. Do not pad with large unchanged regions.",
+    ],
+  });
+
   pi.registerCommand("init", {
     description: "Generate an AGENTS.md contributor guide for this repository",
     handler: async (args, _ctx) => {

@@ -58,12 +58,13 @@ export default function (pi: ExtensionAPI) {
   // Patch renderer lookup before any restored tool components are created.
   // This changes only presentation; extension-owned execute functions remain
   // registered and invoked as-is.
-  installExternalToolRenderers();
+  const restoreExternalToolRenderers = installExternalToolRenderers();
+  let restoreShellRenderer = () => {};
 
-  // Register Codex-style tool renderers at load time. This overrides the
-  // built-in tools by name; if a built-in factory changes shape across Pi
-  // versions, installToolRenderers swallows the error per-tool and leaves that
-  // tool's default rendering intact. Safe in all modes (renderers only run in TUI).
+  // Register Codex-style tool renderers at load time. Most built-ins are
+  // overridden by name; grep/find use the renderer-only prototype redirect so
+  // extension-owned implementations remain intact regardless of load order.
+  // Factory failures are isolated per tool. Renderers only run in TUI mode.
   try {
     installToolRenderers(pi, process.cwd());
   } catch {
@@ -80,8 +81,14 @@ export default function (pi: ExtensionAPI) {
     if (ctx.mode !== "tui") return;
     const uiState = { shellMode: false };
     installResourceHeadingGradient(ctx.ui.theme);
-    installShellRenderer(ctx.ui.theme);
+    restoreShellRenderer();
+    restoreShellRenderer = installShellRenderer(ctx.ui.theme);
     ctx.ui.setEditorComponent(makeReferenceEditorFactory(ctx, pi, uiState));
     installFooter(ctx, uiState);
+  });
+
+  pi.on("session_shutdown", () => {
+    restoreShellRenderer();
+    restoreExternalToolRenderers();
   });
 }

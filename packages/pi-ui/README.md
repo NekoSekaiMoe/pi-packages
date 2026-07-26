@@ -8,8 +8,11 @@ gives the interactive TUI a Codex-style look:
 - **Single-line status toolbar** — existing extension statuses stay visible on
   the left; a context meter (`[▓▓░░░░░░] 25%/272k`), token totals, and cost stay
   right-aligned. All values are real Pi data.
-- **Animated Working shimmer** — `· Working (9s · esc to interrupt)` with a
-  moving white/cyan/green gradient and a live elapsed counter.
+- **Animated status shimmer** — `· Working (9s · esc to interrupt)` with a
+  moving white/cyan/green gradient and a live elapsed counter. Retry countdowns
+  and context compaction use the same shimmer while preserving their status
+  details. Once the agent settles, a persistent `Worked for 9s` transcript row
+  records the full run time.
 - **Flat Codex-style tool rows** — the built-in tools render as a status-dot
   title row plus a `└ …` output sub-row:
 
@@ -40,25 +43,27 @@ built on documented `ExtensionAPI` / `ExtensionUIContext` methods:
 | ------------- | --------------------------------------------------- | ----------------------------------------------- |
 | `editor.ts`   | `ctx.ui.setEditorComponent()`                       | Open frame + embedded model toolbar             |
 | `footer.ts`   | `ctx.ui.setFooter()`                                | Extension statuses + usage toolbar              |
-| `working.ts`  | `ctx.ui.setWorkingIndicator()` + `setWorkingMessage()` | Animated shimmer + live counter              |
+| `working.ts`  | Working UI methods + guarded TUI `Loader` hook       | Status shimmer + elapsed transcript row         |
 | `tools.ts`    | `pi.registerTool()` + `ToolExecutionComponent`      | Flat tool rows and edit/write diffs             |
 | `gradient.ts` | —                                                   | Truecolor gradient helpers                      |
 
-The tool-row restyle re-registers a tool of the **same name** for each built-in
-(`bash`, `read`, `edit`, `write`, `grep`, `find`, `ls`). It spreads the built-in
-definition first, so the real `execute`, parameters, and prompt metadata are
-reused verbatim — only `renderShell`, `renderCall`, and `renderResult` change.
-`write` additionally captures the previous file contents so its result can carry
+The tool-row restyle re-registers same-name definitions for `bash`, `read`,
+`edit`, `write`, and `ls`. It spreads each built-in definition first, so the real
+`execute`, parameters, and prompt metadata are reused verbatim. `grep` and `find`
+use renderer-only lookup redirects instead, preserving FFF or other extension
+implementations regardless of package load order. `write` additionally captures
+the previous file contents so its result can carry
 the same display-oriented diff that `edit` already returns. Diff rows include
 `(+added -removed)` totals and collapse long changes behind the normal tool
 expand shortcut.
 
 Shell results keep an up-to-seven-line collapsed preview (three leading lines,
-a hidden line count, and three trailing lines when output is longer). `fffind`, `ask_user_question`, and
+a hidden line count, and three trailing lines when output is longer). `fffind`, `ffgrep`, `web_search`, `batch_web_fetch`, `ask_user_question`, and
 `subagent` are registered by their owning extensions, so their definitions and
 execution stay untouched. Pi UI only redirects their TUI renderer lookups to the
 same flat rows used by the built-in tools; subagent activity is presented as an
-`Explored` list.
+`Explored` list. The external renderer redirect also covers `grep` and `find`
+when FFF is configured in override mode.
 
 ## Version coupling
 
@@ -68,14 +73,17 @@ extension contract:
 - the `create<Tool>ToolDefinition(cwd)` factories exported from
   `@earendil-works/pi-coding-agent`, and
 - the private renderer lookup methods on the exported `ToolExecutionComponent`
-  used to normalize externally registered tool rows, and
+  used to normalize externally registered tool rows,
+- the TUI `Loader.updateDisplay` implementation used to style retry and
+  compaction statuses, and
 - the `ToolRenderContext` flags (`executionStarted`, `argsComplete`, `isPartial`,
   `isError`).
 
-Verified against **pi-coding-agent 0.81.0** (this repo's pinned version). Each
-tool swap is wrapped in `try`/`catch`: if a factory import or shape changes, that
-tool silently keeps its built-in rendering rather than breaking execution. The
-gradient indicator, footer, and bordered editor use only stable public APIs.
+Verified against **pi-coding-agent 0.81.0** (the current lockfile version). Each
+internal hook is guarded by shape checks and `try`/`catch`; incompatible shapes
+keep Pi's default rendering. Prototype changes are restored on session shutdown.
+The normal Working indicator, elapsed entry, footer, and bordered editor use
+stable public APIs.
 
 ## Limitations
 
