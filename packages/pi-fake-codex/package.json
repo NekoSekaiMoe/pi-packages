@@ -1,7 +1,7 @@
 {
   "name": "@NekoSekaiMoe/pi-fake-codex",
   "version": "0.1.0",
-  "description": "Makes the Pi coding agent's outgoing LLM requests impersonate the official OpenAI Codex CLI (codex_cli_rs) by rewriting the originator and User-Agent headers",
+  "description": "Makes the Pi coding agent impersonate the official OpenAI Codex CLI (codex_cli_rs) by rewriting the originator and User-Agent headers, reshaping the openai-responses request body to match Codex's layout, and registering an apply_patch editing alias",
   "license": "BSD-2-Clause",
   "author": "NekoSekaiMoe",
   "keywords": [

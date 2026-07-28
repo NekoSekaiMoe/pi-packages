@@ -1,7 +1,7 @@
 {
   "name": "@NekoSekaiMoe/pi-init",
   "version": "0.1.0",
-  "description": "Adds /init AGENTS.md generation and an apply_patch editing alias to the Pi coding agent",
+  "description": "Adds an /init command that generates an AGENTS.md contributor guide for the current repository",
   "license": "BSD-2-Clause",
   "author": "NekoSekaiMoe",
   "keywords": [
@@ -10,9 +10,7 @@
     "pi-extension",
     "pi-package",
     "init",
-    "agents-md",
-    "apply-patch",
-    "edit"
+    "agents-md"
   ],
   "files": [
     "src/",

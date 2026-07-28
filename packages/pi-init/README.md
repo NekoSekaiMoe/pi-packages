@@ -1,6 +1,6 @@
 # @NekoSekaiMoe/pi-init
 
-Adds an `/init` command to the [Pi coding agent](https://github.com/badlogic/pi-mono) that generates a high-quality `AGENTS.md` contributor guide for the current repository. It also exposes `apply_patch` as an exact-replacement editing tool compatible with Pi's built-in `edit`.
+Adds an `/init` command to the [Pi coding agent](https://github.com/badlogic/pi-mono) that generates a high-quality `AGENTS.md` contributor guide for the current repository.
 
 ## Why
 
@@ -33,14 +33,6 @@ pi -e ./src/index.ts
 ```
 
 Anything after `/init` is appended to the generation prompt as additional instructions.
-
-## `apply_patch` tool
-
-The package registers an LLM-callable `apply_patch` tool with the same parameter
-schema, exact-replacement behavior, file mutation queue, and result renderer as
-Pi's built-in `edit`. The alias is useful for agents whose editing instructions
-expect an `apply_patch`-named tool; it accepts `path` plus one or more
-`edits[].oldText` / `edits[].newText` replacements rather than unified diff text.
 
 ## License
 
