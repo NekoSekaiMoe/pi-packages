@@ -10,7 +10,8 @@ A yarn-workspaces monorepo. Each package under `packages/` is a self-contained p
 | --- | --- | --- |
 | [`@NekoSekaiMoe/pi-exit`](packages/pi-exit) | `/exit` | A friendly alias for the built-in `/quit` — gracefully shuts pi down. |
 | [`@NekoSekaiMoe/pi-init`](packages/pi-init) | `/init` | Generates a high-quality `AGENTS.md` contributor guide, replacing the auto-invoked `init` skill. |
-| [`@NekoSekaiMoe/pi-ui`](packages/pi-ui) | — | Reskins the interactive TUI with a Codex-style bordered input, model/context toolbar, gradient working indicator, and flat tool-call rows. |
+| [`@NekoSekaiMoe/pi-ui`](packages/pi-ui) | — | Reskins the interactive TUI with a Codex-style open gradient input, single-line status toolbar, animated Working shimmer, and flat tool-call rows. |
+| [`@NekoSekaiMoe/pi-fake-codex`](packages/pi-fake-codex) | — | Makes pi impersonate the official Codex CLI on Responses-API requests (identity headers + `openai-responses` body reshape) and registers an `apply_patch` editing alias. |
 
 ## Install
 
@@ -18,6 +19,7 @@ A yarn-workspaces monorepo. Each package under `packages/` is a self-contained p
 pi install npm:@NekoSekaiMoe/pi-exit
 pi install npm:@NekoSekaiMoe/pi-init
 pi install npm:@NekoSekaiMoe/pi-ui
+pi install npm:@NekoSekaiMoe/pi-fake-codex
 ```
 
 ## Development
