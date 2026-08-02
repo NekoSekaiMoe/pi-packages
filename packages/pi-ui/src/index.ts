@@ -16,7 +16,11 @@
  *   - editor.ts   -> ctx.ui.setEditorComponent() + embedded model toolbar
  *   - footer.ts   -> ctx.ui.setFooter() status toolbar
  *   - working.ts  -> pi.on(agent_start/settled) + setWorkingIndicator/Message
+ *     (also mirrors @zhushanwen/pi-todo steps into the Working line)
  *   - tools.ts    -> pi.registerTool() (overrides built-ins by name)
+ *
+ * The todo extension's own plan widget is suppressed here (suppressTodoWidget)
+ * because the Working line already tracks the current step.
  *
  * pi.on handlers (tools, working) are registered ONCE at load so they don't
  * stack across session switches/reloads. The per-session setters (editor,
@@ -29,7 +33,7 @@
  *   pi install npm:@NekoSekaiMoe/pi-ui
  */
 
-import type { ExtensionAPI, Theme, ThemeColor } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI, ExtensionUIContext, Theme, ThemeColor } from "@earendil-works/pi-coding-agent";
 import { makeReferenceEditorFactory } from "./editor.ts";
 import { installFooter } from "./footer.ts";
 import { FRAME_STOPS, gradientText } from "./gradient.ts";
@@ -38,6 +42,31 @@ import { installWorking } from "./working.ts";
 
 const patchedThemes = new WeakSet<Theme>();
 const PI_THEME_KEY = Symbol.for("@earendil-works/pi-coding-agent:theme");
+
+/**
+ * The todo extension renders its plan as a widget above the editor
+ * (`setWidget("todo", …)`). pi-ui hijacks that plan into the Working line, so
+ * the duplicate panel is suppressed: every "todo" widget write is forced to
+ * `undefined`. ctx.ui is shared across the whole session, so wrapping once is
+ * enough even though refreshDisplay fires from many handlers.
+ */
+const todoWidgetsSuppressed = new WeakSet<object>();
+function suppressTodoWidget(ui: ExtensionUIContext): void {
+  if (todoWidgetsSuppressed.has(ui)) return;
+  type SetWidget = ExtensionUIContext["setWidget"];
+  const original = ui.setWidget.bind(ui) as SetWidget;
+  const wrapped = ((key: string, content: unknown, options?: unknown) =>
+    // The cast erases the call-overload so we can reroute "todo" writes.
+    (original as (k: string, c: unknown, o?: unknown) => void)(
+      key,
+      key === "todo" ? undefined : content,
+      options,
+    )) as SetWidget;
+  ui.setWidget = wrapped;
+  todoWidgetsSuppressed.add(ui);
+  // Clear anything the todo extension already registered before we wrapped it.
+  ui.setWidget("todo", undefined);
+}
 
 function installResourceHeadingGradient(themeProxy: Theme): void {
   // Pi exposes a forwarding Proxy to extensions. Patch the shared instance
@@ -89,6 +118,7 @@ export default function (pi: ExtensionAPI) {
     if (ctx.mode !== "tui") return;
     const uiState = { shellMode: false };
     installResourceHeadingGradient(ctx.ui.theme);
+    suppressTodoWidget(ctx.ui);
     restoreShellRenderer();
     restoreShellRenderer = installShellRenderer(ctx.ui.theme);
     ctx.ui.setEditorComponent(makeReferenceEditorFactory(ctx, pi, uiState));

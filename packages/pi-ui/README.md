@@ -19,7 +19,9 @@ gives the interactive TUI a Codex-style look:
   updates render nothing at all — the Working line silently glides to the next
   step: `1/3 · implement rainbow shimmer (9s · esc to interrupt)`. Finished or
   cleared plans fall back to the plain `Working` label; failed updates still
-  surface their error row.
+  surface their error row. The extension's own plan widget above the editor is
+  suppressed (`setWidget("todo")` writes are forced to `undefined`) since the
+  Working line already tracks the current step.
 - **Flat Codex-style tool rows** — the built-in tools render as a status-dot
   title row plus a `└ …` output sub-row:
 
