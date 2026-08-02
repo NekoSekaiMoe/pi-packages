@@ -71,9 +71,11 @@ export function makeReferenceEditorFactory(ctx: ExtensionContext, pi: ExtensionA
 
       constructor() {
         super(tui, theme, keybindings, { paddingX: 0 });
-        // The TUI defaults to differential redraws that may leave old rows behind
-        // when this component becomes shorter after a resize or menu close.
-        tui.setClearOnShrink(true);
+        // NOTE: never enable tui.setClearOnShrink(true) here. It is a TUI-wide
+        // switch: any component shrinking by any amount forces a full
+        // screen+scrollback clear (visible flicker during fast streaming).
+        // pi-tui's differential renderer clears stale tail rows itself
+        // (verified in 0.80.10+), so the shrink case needs no help.
       }
 
       private syncShellMode(): void {
