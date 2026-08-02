@@ -22,8 +22,8 @@ import { isAbsolute, resolve } from "node:path";
 import { fgRgb } from "./gradient.ts";
 
 interface RowConfig {
-  running: string;
-  done: string;
+  running: string | ((args: Record<string, unknown>) => string);
+  done: string | ((args: Record<string, unknown>) => string);
   primary: (args: Record<string, unknown>) => string;
   shell?: boolean;
   showPrimary?: boolean;
@@ -110,6 +110,20 @@ const ROWS: Record<string, RowConfig> = {
     },
   },
   subagent: { running: "Exploring", done: "Explored", primary: () => "", showPrimary: false },
+  // @zhushanwen/pi-todo: only plan creation earns a transcript row
+  // ("Plan created · N steps"); updates/deletes/clears hide their component
+  // entirely and silently advance the Working line (see working.ts).
+  todo: {
+    running: (args) => (args.action === "add" ? "Creating plan" : args.action === "clear" ? "Clearing plan" : "Updating plan"),
+    done: (args) => (args.action === "add" ? "Plan created" : args.action === "clear" ? "Plan cleared" : "Plan updated"),
+    primary: (args) => {
+      if (args.action === "add" && Array.isArray(args.texts)) return `${args.texts.length} steps`;
+      if (typeof args.id === "number") return `#${args.id}`;
+      if (Array.isArray(args.updates)) return `${args.updates.length} updates`;
+      if (Array.isArray(args.ids)) return `${args.ids.length} todos`;
+      return "";
+    },
+  },
 };
 
 const FACTORIES: Record<string, (cwd: string) => ToolDefinition<any, any, any>> = {
@@ -149,9 +163,10 @@ function renderTitle(
 ): string {
   const running = context.isPartial;
   const dot = fgRgb("•", context.isError ? DOT_ERROR : running ? DOT_RUNNING : DOT_DONE);
-  const verb = theme.bold(theme.fg("toolTitle", running ? config.running : config.done));
+  const resolveVerb = (verb: RowConfig["running"]): string => (typeof verb === "function" ? verb(args) : verb);
+  const verb = theme.bold(theme.fg("toolTitle", running ? resolveVerb(config.running) : resolveVerb(config.done)));
   const primary = config.primary(args);
-  const target = config.showPrimary === false ? "" : ` ${renderPrimary(primary, config, theme)}`;
+  const target = config.showPrimary === false || !primary ? "" : ` ${renderPrimary(primary, config, theme)}`;
   return `${dot} ${verb}${target}${suffix}`;
 }
 
@@ -510,6 +525,8 @@ export function installShellRenderer(theme: Theme): () => void {
 
 interface ToolExecutionState {
   toolName?: string;
+  /** Internal flag honored by render(): true hides the whole component row. */
+  hideComponent?: boolean;
 }
 
 interface ToolExecutionOriginals {
@@ -518,28 +535,82 @@ interface ToolExecutionOriginals {
   getRenderShell: (this: ToolExecutionState) => unknown;
 }
 
-const EXTERNAL_FLAT_TOOLS = new Set([
-  "grep",
-  "find",
-  "ffgrep",
-  "fffind",
-  "search",
-  "web_search",
-  "batch_web_fetch",
-  "ask_user_question",
-  "subagent",
-]);
+/** Arg keys probed, in order, when deriving a primary label for unknown tools. */
+const PRIMARY_ARG_KEYS = [
+  "command",
+  "path",
+  "pattern",
+  "query",
+  "url",
+  "file_path",
+  "file",
+  "name",
+];
 
-function isExternalFlatTool(name: unknown): name is keyof typeof ROWS {
-  return typeof name === "string" && EXTERNAL_FLAT_TOOLS.has(name);
+/** Best-effort primary label for tools without a curated ROWS entry. */
+function genericPrimary(args: Record<string, unknown>): string {
+  for (const key of PRIMARY_ARG_KEYS) {
+    const value = args[key];
+    if (typeof value === "string" && value) return value;
+  }
+  if (Array.isArray(args.queries)) return `${args.queries.length} queries`;
+  if (Array.isArray(args.requests)) return `${args.requests.length} URLs`;
+  try {
+    const encoded = JSON.stringify(args);
+    if (!encoded || encoded === "{}") return "";
+    return encoded.length > 80 ? `${encoded.slice(0, 77)}…` : encoded;
+  } catch {
+    return "";
+  }
+}
+
+/** Derived row config for any tool without a curated entry: `• Running web search …`. */
+function genericRowConfig(name: string): RowConfig {
+  const label = name.replace(/[_-]+/g, " ").trim() || name;
+  return { running: `Running ${label}`, done: `Ran ${label}`, primary: genericPrimary };
+}
+
+function rowConfigFor(name: string): RowConfig {
+  return ROWS[name] ?? genericRowConfig(name);
+}
+
+/** Tools pi-ui re-registers via installToolRenderers; their flat rows come from those definitions. */
+const PI_UI_BUILTIN_TOOLS = new Set(Object.keys(FACTORIES));
+
+function isPiUiBuiltinTool(name: unknown): boolean {
+  return typeof name === "string" && PI_UI_BUILTIN_TOOLS.has(name);
+}
+
+/** Result body for renderer-redirected tools: flat output preview, no diff handling. */
+function renderRedirectedResultText(
+  name: string,
+  result: AgentToolResult<unknown>,
+  options: ToolRenderResultOptions,
+  theme: Theme,
+  isError = false,
+): string {
+  if (options.isPartial) return "";
+  // The plan already lives in pi-todo's own status/widget; keep the transcript
+  // to the single "Plan created/updated" row. Errors still surface.
+  if (name === "todo" && !isError) return "";
+  const output = textOutput(result);
+  // Image-only results would otherwise print a misleading "(no output)" row
+  // above the image block the component renders separately.
+  if (!output && result.content.some((item) => item.type !== "text")) return "";
+  return renderOutputText(output, options.expanded, theme, ROWS[name]?.shell ? SHELL_PREVIEW_LINES : 1);
 }
 
 /**
- * Search, FFF, questionnaire, and subagent extensions register their own definitions.
- * Their execute functions must remain untouched, but their default render shell
- * is a bordered block and their labels expose the raw extension names. Redirect
- * these renderer lookups on Pi's public component class so they use the same
- * flat row as built-in tools.
+ * Every tool pi-ui does not re-register itself gets the flat Codex row through
+ * this redirect, with no per-tool declaration required. Tools listed in ROWS
+ * use their curated verbs; anything else (new extension tools, MCP tools, …)
+ * falls back to a derived `Running <name>` row. Execute functions always stay
+ * with the owning extension — only the renderer lookups on Pi's public
+ * component class are redirected.
+ *
+ * This is a process-lifetime patch, like the registerTool() registrations:
+ * session switches emit session_shutdown but must NOT restore it, otherwise
+ * grep/find/web_search silently revert to Pi's bordered default until reload.
  */
 export function installExternalToolRenderers(): () => void {
   const noop = () => {};
@@ -563,32 +634,41 @@ export function installExternalToolRenderers(): () => void {
     prototype[TOOL_EXECUTION_ORIGINALS] = originals;
 
     const patchedCall: ToolExecutionOriginals["getCallRenderer"] = function (this: ToolExecutionState): unknown {
-      if (!isExternalFlatTool(this.toolName)) return originals.getCallRenderer.call(this);
+      const name = this.toolName;
+      if (typeof name !== "string" || isPiUiBuiltinTool(name)) return originals.getCallRenderer.call(this);
       return (args: unknown, theme: Theme, context: RenderContext): Text => {
-        const config = ROWS[this.toolName!];
+        const record = (args as Record<string, unknown>) ?? {};
+        // Silent todo updates: hide the whole row; the Working line picks up
+        // the new step. updateDisplay resets this flag before each pass, and
+        // the result renderer re-shows the row when the call failed.
+        if (name === "todo" && record.action !== "add") this.hideComponent = true;
         const text = (context.lastComponent as Text | undefined) ?? new Text("", 0, 0);
-        text.setText(renderTitle(config!, (args as Record<string, unknown>) ?? {}, context, theme));
+        text.setText(renderTitle(rowConfigFor(name), record, context, theme));
         return text;
       };
     };
     const patchedResult: ToolExecutionOriginals["getResultRenderer"] = function (this: ToolExecutionState): unknown {
-      if (!isExternalFlatTool(this.toolName)) return originals.getResultRenderer.call(this);
+      const name = this.toolName;
+      if (typeof name !== "string" || isPiUiBuiltinTool(name)) return originals.getResultRenderer.call(this);
       return (
         result: AgentToolResult<unknown>,
         options: ToolRenderResultOptions,
         theme: Theme,
         context: RenderContext,
       ): Text => {
+        // A failed silent todo update still surfaces its error row.
+        if (name === "todo" && context.isError) this.hideComponent = false;
         const text = (context.lastComponent as Text | undefined) ?? new Text("", 0, 0);
-        const content = this.toolName === "subagent"
+        const content = name === "subagent"
           ? renderExploredResult(result, options, theme)
-          : renderResultText(this.toolName!, result, options, theme);
+          : renderRedirectedResultText(name, result, options, theme, context.isError);
         text.setText(content);
         return text;
       };
     };
     const patchedShell: ToolExecutionOriginals["getRenderShell"] = function (this: ToolExecutionState): unknown {
-      return isExternalFlatTool(this.toolName) ? "self" : originals.getRenderShell.call(this);
+      const name = this.toolName;
+      return typeof name === "string" && !isPiUiBuiltinTool(name) ? "self" : originals.getRenderShell.call(this);
     };
 
     prototype.getCallRenderer = patchedCall;

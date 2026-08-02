@@ -868,6 +868,11 @@
   resolved "https://registry.npmmirror.com/@xmldom/xmldom/-/xmldom-0.9.10.tgz"
   integrity sha512-A9gOqLdi6cV4ibazAjcQufGj0B1y/vDqYrcuP6d/6x8P27gRS8643Dj9o1dEKtB6O7fwxb2FgBmJS2mX7gpvdw==
 
+"@xyz-agent/extension-protocol@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.npmmirror.com/@xyz-agent/extension-protocol/-/extension-protocol-0.2.0.tgz#e41afbfd4820cf47df1f504ab561a063c6e30a8e"
+  integrity sha512-O0rLEljva7Vn61HfuZNRDBEkSb8v5stBnYposEDYF4n/9lF8p3gdiSh+vEF6NZzCFA6VI/QSqwdFZ8xhCKoK3A==
+
 "@yuuang/ffi-rs-android-arm64@1.3.2":
   version "1.3.2"
   resolved "https://registry.npmmirror.com/@yuuang/ffi-rs-android-arm64/-/ffi-rs-android-arm64-1.3.2.tgz#3c7124ea1e1edc445d26fd734f43ef58eb9cf975"
@@ -922,6 +927,13 @@
   version "1.3.2"
   resolved "https://registry.npmmirror.com/@yuuang/ffi-rs-win32-x64-msvc/-/ffi-rs-win32-x64-msvc-1.3.2.tgz#7dfdd68e66d80a7e65e72ef672eb87a21001bc25"
   integrity sha512-ZL5MJ76n2rjwGo26kCWW7wK6QT/cee00Rx8pfW79pz6vM6jqfhoE7zTnwFiw4aOQUes9+HUc5DeeJ3z+Vb9oLg==
+
+"@zhushanwen/pi-todo@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.npmmirror.com/@zhushanwen/pi-todo/-/pi-todo-0.5.0.tgz#d36550338609ed85fa1c68510e93bb767607ce60"
+  integrity sha512-TzoYAPYC4hJMx9MuqOC1xLC93whRMTeHFKMjsWMuvVNVWbDCbNSOoYwvgdL0NqoqU3z8yk0VgciTR8I4Cz1dFw==
+  dependencies:
+    "@xyz-agent/extension-protocol" "^0.2.0"
 
 accepts@^2.0.0:
   version "2.0.0"

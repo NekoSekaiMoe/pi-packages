@@ -8,7 +8,8 @@
  *     context, token, and cost data,
  *   - an animated "Working (Ns · esc to interrupt)" shimmer,
  *   - flat Codex-style tool-call rows (`● Ran <cmd>` / `└ <output>`) for the
- *     built-in tools and selected extension tools.
+ *     built-in tools, and automatically for every other tool via a renderer
+ *     lookup redirect on ToolExecutionComponent.
  *
  * Wiring only. Each concern lives in its own module and is installed against
  * documented ExtensionAPI / ExtensionUIContext methods:
@@ -57,8 +58,15 @@ function installResourceHeadingGradient(themeProxy: Theme): void {
 export default function (pi: ExtensionAPI) {
   // Patch renderer lookup before any restored tool components are created.
   // This changes only presentation; extension-owned execute functions remain
-  // registered and invoked as-is.
-  const restoreExternalToolRenderers = installExternalToolRenderers();
+  // registered and invoked as-is. The patch covers every tool pi-ui does not
+  // re-register itself, so new extension tools get flat rows automatically.
+  //
+  // It is installed ONCE for the process lifetime and intentionally NOT
+  // restored on session_shutdown: that event also fires on session switches
+  // (/resume, /new, fork), and restoring there would silently revert
+  // grep/find/web_search/etc. to Pi's bordered default for the rest of the
+  // process, since nothing reinstalls the patch between sessions.
+  installExternalToolRenderers();
   let restoreShellRenderer = () => {};
 
   // Register Codex-style tool renderers at load time. Most built-ins are
@@ -89,6 +97,5 @@ export default function (pi: ExtensionAPI) {
 
   pi.on("session_shutdown", () => {
     restoreShellRenderer();
-    restoreExternalToolRenderers();
   });
 }

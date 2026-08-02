@@ -9,10 +9,17 @@ gives the interactive TUI a Codex-style look:
   the left; a context meter (`[▓▓░░░░░░] 25%/272k`), token totals, and cost stay
   right-aligned. All values are real Pi data.
 - **Animated status shimmer** — `· Working (9s · esc to interrupt)` with a
-  moving white/cyan/green gradient and a live elapsed counter. Retry countdowns
+  moving rainbow gradient and a live elapsed counter. Retry countdowns
   and context compaction use the same shimmer while preserving their status
   details. Once the agent settles, a persistent `Worked for 9s` transcript row
   records the full run time.
+- **Todo plan hijack** — when a todo extension (e.g. `@zhushanwen/pi-todo`)
+  creates a plan, the transcript keeps a single `● Plan created · N steps` tool
+  row (the full list stays in that extension's own widget/status). Later todo
+  updates render nothing at all — the Working line silently glides to the next
+  step: `1/3 · implement rainbow shimmer (9s · esc to interrupt)`. Finished or
+  cleared plans fall back to the plain `Working` label; failed updates still
+  surface their error row.
 - **Flat Codex-style tool rows** — the built-in tools render as a status-dot
   title row plus a `└ …` output sub-row:
 
@@ -58,12 +65,19 @@ the same display-oriented diff that `edit` already returns. Diff rows include
 expand shortcut.
 
 Shell results keep an up-to-seven-line collapsed preview (three leading lines,
-a hidden line count, and three trailing lines when output is longer). `fffind`, `ffgrep`, `web_search`, `batch_web_fetch`, `ask_user_question`, and
-`subagent` are registered by their owning extensions, so their definitions and
-execution stay untouched. Pi UI only redirects their TUI renderer lookups to the
-same flat rows used by the built-in tools; subagent activity is presented as an
-`Explored` list. The external renderer redirect also covers `grep` and `find`
-when FFF is configured in override mode.
+a hidden line count, and three trailing lines when output is longer). Every
+other tool — `grep` and `find`, extension tools like `fffind`, `ffgrep`,
+`web_search`, `batch_web_fetch`, `ask_user_question`, and `subagent`, plus any
+tool added later by newly installed extensions or MCP servers — is covered
+automatically: Pi UI redirects the TUI renderer lookups on
+`ToolExecutionComponent` to the same flat rows without touching the owning
+extension's definition or execution. Tools with a curated entry get tailored
+verbs (`Searched`, `Fetched`, …); unknown tools get a derived
+`Running <name>` row whose label comes from common argument keys or a compact
+JSON summary. Subagent activity is presented as an `Explored` list. The
+redirect is process-lifetime and survives session switches, so FFF or other
+extension implementations keep their flat rendering regardless of package
+load order.
 
 ## Version coupling
 

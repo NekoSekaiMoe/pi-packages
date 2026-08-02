@@ -12,12 +12,16 @@ export const FRAME_STOPS: readonly Rgb[] = [
   [169, 220, 244],
 ];
 
-/** Moving Codex-style shimmer: white -> cyan -> green -> white. */
+/** Moving rainbow shimmer: red -> orange -> yellow -> green -> cyan -> blue -> violet -> red. */
 export const WORKING_STOPS: readonly Rgb[] = [
-  [248, 250, 252],
-  [103, 232, 249],
-  [34, 197, 94],
-  [248, 250, 252],
+  [255, 90, 90],
+  [255, 175, 70],
+  [250, 225, 85],
+  [105, 230, 130],
+  [70, 215, 235],
+  [110, 155, 255],
+  [195, 125, 255],
+  [255, 90, 90],
 ];
 
 export function fgRgb(text: string, [r, g, b]: Rgb): string {
