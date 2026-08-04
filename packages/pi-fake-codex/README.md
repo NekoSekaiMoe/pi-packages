@@ -94,6 +94,18 @@ This is unrelated to the header/body impersonation; it lives here as a
 packaging decision. If you only want the impersonation, the tool registration
 in `src/apply-patch.ts` can be removed without affecting anything else.
 
+## Codex-compatible hooks
+
+This package also ships a hook engine that executes `.pi/hooks.json` in the
+Codex CLI hooks format (ported from [pi-maestro-flow](https://github.com/catlog22/pi-maestro-flow),
+MIT © catlog22; decoupled from its trust store, review TUI, and installer):
+
+- **Config**: `<cwd>/.pi/hooks.json` → `{ "hooks": { "<Event>": [ { "matcher": "Bash|Write", "hooks": [ { "type": "command", "command": "...", "timeout": 600 } ] } ] } }`. Missing or empty file = completely inert.
+- **Event mapping**: `SessionStart`→`session_start`, `UserPromptSubmit`→`input`, `PreToolUse`→`tool_call`, `PostToolUse`→`tool_result`, `PreCompact`→`session_before_compact`, `PostCompact`→`session_compact`, `Stop`→`agent_end`. `SubagentStart`/`SubagentStop`/`PermissionRequest` have no Pi mapping and are skipped with a warning.
+- **Protocol**: the hook command gets a JSON payload on stdin (`session_id`, `transcript_path`, `cwd`, `hook_event_name`, `model`, `turn_id`, plus tool fields) and answers on stdout. Exit 2 + stderr blocks; `{"decision":"block","reason":...}` blocks; `hookSpecificOutput.additionalContext` injects context; `permissionDecision: allow|ask` + `updatedInput` rewrites PreToolUse arguments; `systemMessage` notifies the UI; `continue: false` cancels compaction / stops the turn.
+- Only synchronous `command` hooks run (`prompt`/`agent`/`async` entries are skipped with a warning). 1 MB output cap; timed-out hooks get their whole process tree killed.
+- **Security**: unlike pi-maestro-flow there is **no trust/review step** — a non-empty hooks.json runs as-is. A warning notification with the executable-hook count is shown once per session when a config activates; audit project hooks.json files yourself.
+
 ## Caveats
 
 - **Headers** are rewritten on both `openai-responses` and `openai-codex-responses` requests pi itself makes. **Bodies** are rewritten only on `openai-responses`. Neither affects sub-processes, MCP servers, tools that make their own HTTP calls, Chat Completions (`openai-completions`), or any non-Responses API.
@@ -102,4 +114,4 @@ in `src/apply-patch.ts` can be removed without affecting anything else.
 
 ## License
 
-BSD-2-Clause
+BSD-2-Clause (`src/hooks/` is ported MIT code © catlog22, as noted in the file headers).
