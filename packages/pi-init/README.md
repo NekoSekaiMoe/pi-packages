@@ -1,39 +1,70 @@
 # @NekoSekaiMoe/pi-init
 
-Adds an `/init` command to the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent) that generates a high-quality `AGENTS.md` contributor guide for the current repository.
+An explicit `/init` command for the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent). It starts an agent turn that inspects the current repository and creates a concise, repository-specific `AGENTS.md` contributor guide.
 
 ## Why
 
-Pi's default `init` behavior is an auto-invoked skill (`~/.pi/agent/skills/init/SKILL.md`) — the model has to notice and choose to run it. This extension turns it into an explicit `/init` command. The generation instructions are injected as a user message (which always triggers a turn), so the agent starts immediately and you see exactly what was asked.
+An initialization skill only runs when the model notices and chooses to invoke it. This extension turns the workflow into a visible command: `/init` injects the complete generation request as a user message, which immediately starts an agent turn and makes the instructions visible in the transcript.
 
-## What it does
-
-Registers an `/init` command that prompts the agent to:
-
-- Analyze the codebase autonomously and generate `AGENTS.md` titled **Repository Guidelines**.
-- Skip and report if `AGENTS.md` already exists (never overwrites).
-- Cover the standard outline: project structure, build/test commands, coding style, testing guidelines, and commit/PR conventions — verified against actual project files, not invented.
-- Keep it concise (200–400 words).
-
-## Install
+## Installation
 
 ```bash
-# From npm
 pi install npm:@NekoSekaiMoe/pi-init
+```
 
-# Local development
+For local development from this package directory:
+
+```bash
 pi -e ./src/index.ts
 ```
 
 ## Usage
 
-```
-/init                        generate AGENTS.md with the default outline
-/init also document the CI   append extra instructions to the prompt
+```text
+/init
+/init also document the CI and release process
 ```
 
-Anything after `/init` is appended to the generation prompt as additional instructions.
+Everything after `/init` is appended to the prompt under an `Additional instructions` heading. Use this to request project-specific sections, emphasis, or constraints.
+
+## Generated guide
+
+The built-in prompt asks the agent to:
+
+1. Check for `AGENTS.md` in the current working directory and stop without modifying it if it already exists.
+2. Inspect the repository rather than guessing: package manifests, source layout, configuration, CI, existing documentation, and Git history are all potential evidence.
+3. Create `AGENTS.md` with the title **Repository Guidelines**.
+4. Document the project structure, development commands, coding conventions, testing practices, and commit/PR expectations when applicable.
+5. Add or omit sections according to the actual repository.
+6. Keep the result direct and actionable, with roughly 200–400 words as the default target.
+
+The prompt may also include architecture, security, configuration, or agent-specific guidance when those topics are relevant.
+
+## How it works
+
+The extension registers `/init` with `pi.registerCommand()`. The handler trims the command arguments, appends any extra instructions to a constant prompt, and calls:
+
+```ts
+pi.sendUserMessage(prompt);
+```
+
+`sendUserMessage()` triggers the agent turn. The extension itself does not scan the repository or write `AGENTS.md`; the active model performs that work using the tools available in the current Pi session.
+
+## Important boundary
+
+The “do not overwrite an existing `AGENTS.md`” rule is a prompt-level safeguard, not a filesystem guard implemented by this extension. The active agent is responsible for checking the file and following the instruction. Review model actions when working in repositories where overwrites would be costly.
+
+Likewise, additional text after `/init` is inserted verbatim into the generation request. Treat it as instructions to the active agent, not as configuration parsed or validated by the extension.
+
+## Source
+
+```text
+src/index.ts   command registration and AGENTS.md generation prompt
+package.json   Pi extension entry point and npm metadata
+```
+
+Pi loads the TypeScript source directly; there is no build step.
 
 ## License
 
-BSD-2-Clause
+BSD-2-Clause.

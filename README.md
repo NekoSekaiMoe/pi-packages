@@ -1,20 +1,32 @@
 # pi-packages
 
-Extensions for the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent), by [@NekoSekaiMoe](https://github.com/NekoSekaiMoe).
+A Yarn workspaces monorepo of extensions for the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent), maintained by [@NekoSekaiMoe](https://github.com/NekoSekaiMoe).
 
-A yarn-workspaces monorepo. Each package under `packages/` is a self-contained pi extension, published independently to npm under the `@NekoSekaiMoe` scope.
+Each directory under [`packages/`](packages/) is an independent Pi package with its own npm release under the `@NekoSekaiMoe` scope. Install only the extensions you need; the repository is a development workspace, not a single runtime bundle.
 
 ## Packages
 
-| Package | Command | Description |
+| Package | Activation | Purpose |
 | --- | --- | --- |
-| [`@NekoSekaiMoe/pi-exit`](packages/pi-exit) | `/exit` | A friendly alias for the built-in `/quit` — gracefully shuts pi down. |
-| [`@NekoSekaiMoe/pi-init`](packages/pi-init) | `/init` | Generates a high-quality `AGENTS.md` contributor guide, replacing the auto-invoked `init` skill. |
-| [`@NekoSekaiMoe/pi-ui`](packages/pi-ui) | — | Reskins the interactive TUI with a Codex-style open gradient input, single-line status toolbar, animated Working shimmer, and flat tool-call rows. |
-| [`@NekoSekaiMoe/pi-fake-codex`](packages/pi-fake-codex) | — | Makes pi impersonate the official Codex CLI on Responses-API requests (identity headers + `openai-responses` body reshape) and registers an `apply_patch` editing alias. |
-| [`@NekoSekaiMoe/pi-smart-flow`](packages/pi-smart-flow) | — | A lightweight delegation-experience layer complementing pi-subagents: delegation nudge, `bash_bg` adaptive shell, and blocking `observe` tool. |
+| [`@NekoSekaiMoe/pi-exit`](packages/pi-exit/) | `/exit` | Adds a familiar alias for `/quit` and uses Pi's graceful shutdown path. |
+| [`@NekoSekaiMoe/pi-init`](packages/pi-init/) | `/init [instructions]` | Starts an agent turn that inspects the repository and creates a concise `AGENTS.md`. |
+| [`@NekoSekaiMoe/pi-ui`](packages/pi-ui/) | Automatic on load | Reskins the interactive TUI with a gradient editor, compact usage footer, animated working state, todo/subagent integration, and flat tool rows. |
+| [`@NekoSekaiMoe/pi-fake-codex`](packages/pi-fake-codex/) | Automatic on load | Makes Responses API traffic resemble official Codex CLI traffic, adds an `apply_patch` alias, and runs Codex-compatible project hooks. |
+| [`@NekoSekaiMoe/pi-smart-flow`](packages/pi-smart-flow/) | Automatic on load | Adds delegation guidance, an adaptive `bash_bg` shell tool, and a provider-based `observe` tool. |
 
-## Install
+## Which packages should I use?
+
+- Install **pi-exit** if you habitually type `/exit` in interactive programs.
+- Install **pi-init** if you want repository initialization to be an explicit command instead of a model-discovered skill.
+- Install **pi-ui** if you use Pi interactively and prefer a compact Codex-style terminal interface.
+- Install **pi-fake-codex** when using OpenAI Responses-compatible providers that expect Codex-shaped requests, or when your prompts expect an `apply_patch` tool. Review its hook security notes before enabling project hooks.
+- Install **pi-smart-flow** for long-running shell commands and cleaner subagent delegation. It complements `pi-subagents`; it does not implement a subagent runtime itself.
+
+The packages are independent and can be combined.
+
+## Installation
+
+Install a published package with Pi:
 
 ```bash
 pi install npm:@NekoSekaiMoe/pi-exit
@@ -24,20 +36,83 @@ pi install npm:@NekoSekaiMoe/pi-fake-codex
 pi install npm:@NekoSekaiMoe/pi-smart-flow
 ```
 
-## Development
+See each package README for behavior, configuration, compatibility notes, and security considerations.
 
-Pi loads extensions as TypeScript source directly (via [jiti](https://github.com/unjs/jiti)) — there is no build/emit step. `@typescript/native-preview` (`tsgo`) is used only for type checking.
+## Repository layout
 
-```bash
-yarn install       # install dev dependencies
-yarn typecheck     # type-check all packages with tsgo
-
-# Load a package into a live pi session for local testing
-pi -e ./packages/pi-exit/src/index.ts
+```text
+.
+├── packages/
+│   ├── pi-exit/
+│   ├── pi-fake-codex/
+│   ├── pi-init/
+│   ├── pi-smart-flow/
+│   └── pi-ui/
+├── package.json
+├── tsconfig.base.json
+└── yarn.lock
 ```
 
-Each extension is a default-exported factory `(pi: ExtensionAPI) => void` declared in the package's `package.json` under `pi.extensions`.
+Every package declares its TypeScript entry point in `package.json`:
+
+```json
+{
+  "pi": {
+    "extensions": ["./src/index.ts"]
+  }
+}
+```
+
+Pi loads that source directly through `jiti`. There is no build output or `dist/` directory.
+
+## Development
+
+Requirements:
+
+- Yarn with workspace support
+- A local Pi installation for interactive testing
+
+Install dependencies and type-check the entire workspace:
+
+```bash
+yarn install
+yarn typecheck
+```
+
+There is currently no automated test suite and no build step. The repository uses `@typescript/native-preview` (`tsgo`) for type-checking only.
+
+Load one extension directly from a checkout:
+
+```bash
+pi -e ./packages/pi-exit/src/index.ts
+pi -e ./packages/pi-ui/src/index.ts
+```
+
+A package entry point must default-export an extension factory:
+
+```ts
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+
+export default function (pi: ExtensionAPI): void {
+  // Register commands, tools, or lifecycle handlers.
+}
+```
+
+## Compatibility notes
+
+The workspace currently pins `@earendil-works/pi-tui` and `@earendil-works/pi-agent-core` to `0.81.0` to keep type identity aligned with the installed Pi version. Update those resolutions together with `@earendil-works/pi-coding-agent`.
+
+Most packages rely on documented extension APIs. `pi-ui` additionally uses guarded TUI internals for renderer normalization and can require maintenance after Pi upgrades. `pi-fake-codex` changes provider requests and can execute commands declared in `.pi/hooks.json`; consult its README before using it with untrusted repositories.
+
+## Adding a package
+
+1. Create `packages/pi-<name>/`.
+2. Add a package manifest named `@NekoSekaiMoe/pi-<name>` with `license: "BSD-2-Clause"`, `files: ["src/", "README.md"]`, and a `pi.extensions` entry.
+3. Add `tsconfig.json` extending `../../tsconfig.base.json`.
+4. Implement the default-exported extension factory in `src/index.ts`.
+5. Document installation, behavior, configuration, limitations, and security implications.
+6. Run `yarn typecheck`.
 
 ## License
 
-[BSD-2-Clause](LICENSE)
+[BSD-2-Clause](LICENSE). Ported source files retain their original attribution where noted.

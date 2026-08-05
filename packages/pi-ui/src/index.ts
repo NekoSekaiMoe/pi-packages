@@ -10,6 +10,8 @@
  *   - flat Codex-style tool-call rows (`● Ran <cmd>` / `└ <output>`) for the
  *     built-in tools, and automatically for every other tool via a renderer
  *     lookup redirect on ToolExecutionComponent.
+ *   - subagent-widget.ts -> ctx.ui.setWidget() wrap that re-renders
+ *     pi-subagents' async-jobs widget as flat Codex-style rows
  *
  * Wiring only. Each concern lives in its own module and is installed against
  * documented ExtensionAPI / ExtensionUIContext methods:
@@ -38,6 +40,7 @@ import { makeReferenceEditorFactory } from "./editor.ts";
 import { installFooter } from "./footer.ts";
 import { FRAME_STOPS, gradientText } from "./gradient.ts";
 import { installExternalToolRenderers, installShellRenderer, installToolRenderers } from "./tools.ts";
+import { skinSubagentWidget } from "./subagent-widget.ts";
 import { installWorking } from "./working.ts";
 
 const patchedThemes = new WeakSet<Theme>();
@@ -119,6 +122,7 @@ export default function (pi: ExtensionAPI) {
     const uiState = { shellMode: false };
     installResourceHeadingGradient(ctx.ui.theme);
     suppressTodoWidget(ctx.ui);
+    skinSubagentWidget(ctx.ui);
     restoreShellRenderer();
     restoreShellRenderer = installShellRenderer(ctx.ui.theme);
     ctx.ui.setEditorComponent(makeReferenceEditorFactory(ctx, pi, uiState));

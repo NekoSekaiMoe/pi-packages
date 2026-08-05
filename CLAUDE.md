@@ -46,4 +46,5 @@ There is no test suite yet, and no build. Verification = `yarn typecheck` passin
 ## Caveats
 
 - `/quit` is a built-in command name and cannot be shadowed; that is why the alias is `/exit`.
+- The root `package.json` pins `@earendil-works/pi-tui` and `@earendil-works/pi-agent-core` to **0.81.0** via `resolutions`. Without the pin, fresh installs hoist the latest (e.g. 0.83.x) for the `*` ranges next to pi-coding-agent 0.80.10's nested 0.81.0 copy, and type identity across the two copies (private fields) breaks `yarn typecheck`. Bump the pins together with the installed pi-coding-agent.
 - End-to-end behavior (`pi install`, running commands live) requires a real Pi session and cannot be verified by typecheck alone.

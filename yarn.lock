@@ -303,9 +303,9 @@
   resolved "https://registry.npmmirror.com/@babel/runtime/-/runtime-7.29.7.tgz"
   integrity sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw==
 
-"@earendil-works/pi-agent-core@^0.81.0":
+"@earendil-works/pi-agent-core@*", "@earendil-works/pi-agent-core@0.81.0", "@earendil-works/pi-agent-core@^0.81.0":
   version "0.81.0"
-  resolved "https://registry.npmmirror.com/@earendil-works/pi-agent-core/-/pi-agent-core-0.81.0.tgz"
+  resolved "https://registry.npmmirror.com/@earendil-works/pi-agent-core/-/pi-agent-core-0.81.0.tgz#c6851a9c7ceca41119d99b6db135913d2e9ffaaa"
   integrity sha512-Fe6JYbW0CGVvmD4dwuFreynwZxlTElIMFRqYDl4llRiwfYZjjtAqbV1hY8MrdGqP15+FySBv5RGodOsHqlhvZQ==
   dependencies:
     "@earendil-works/pi-ai" "^0.81.0"
@@ -371,27 +371,9 @@
   optionalDependencies:
     "@mariozechner/clipboard" "0.3.9"
 
-"@earendil-works/pi-tui@^0.74.0":
-  version "0.74.2"
-  resolved "https://registry.npmmirror.com/@earendil-works/pi-tui/-/pi-tui-0.74.2.tgz"
-  integrity sha512-valQPz74qbdydRqII6t9rJ46YANMOOJeDhKm25a1ZrWvWwdjAaAEu6s3ur/LWz84Wkkwcbub2ZkVjzCZi8gFGA==
-  dependencies:
-    get-east-asian-width "^1.3.0"
-    marked "^15.0.12"
-  optionalDependencies:
-    koffi "^2.9.0"
-
-"@earendil-works/pi-tui@^0.77.0":
-  version "0.77.0"
-  resolved "https://registry.npmmirror.com/@earendil-works/pi-tui/-/pi-tui-0.77.0.tgz"
-  integrity sha512-QV/eYtcT3hM9pJjLCkjUFOUmgAm4GPzJ0K4kofVq9+BGU7wNJVzflTO4VY2tYpaI4VSo6A5Hsuw00wY/CDmY/Q==
-  dependencies:
-    get-east-asian-width "1.6.0"
-    marked "15.0.12"
-
-"@earendil-works/pi-tui@^0.81.0":
+"@earendil-works/pi-tui@*", "@earendil-works/pi-tui@0.81.0", "@earendil-works/pi-tui@^0.74.0", "@earendil-works/pi-tui@^0.77.0", "@earendil-works/pi-tui@^0.81.0":
   version "0.81.0"
-  resolved "https://registry.npmmirror.com/@earendil-works/pi-tui/-/pi-tui-0.81.0.tgz"
+  resolved "https://registry.npmmirror.com/@earendil-works/pi-tui/-/pi-tui-0.81.0.tgz#95f26611e24702a21eac6d3e13c6efe6e2a8495b"
   integrity sha512-vdrrV//CldG3Dt20vj+iCRcHOlPwxlOBJwwLg1KE/92IO+TlEwbf4uwKXgFZHGVh9lEJXtYsKzIRb/nHw5YuAA==
   dependencies:
     get-east-asian-width "1.6.0"
@@ -505,12 +487,28 @@
     "@juicesharp/rpiv-config" "^2.0.0"
     typebox "^1.1.24"
 
+"@juicesharp/rpiv-advisor@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.npmmirror.com/@juicesharp/rpiv-advisor/-/rpiv-advisor-2.4.0.tgz#e2604804f44e2abfca7bf14a02ef9ac173ab582f"
+  integrity sha512-aTIQLJjOEBun0WjKdwXPMsViwb5d9rIjv1ys4x7JhaZGut/W5OFU3HMJsavWFu9WLyzhLp4FbhpsnNyEcWCR6w==
+  dependencies:
+    "@juicesharp/rpiv-config" "^2.4.0"
+    typebox "^1.1.24"
+
 "@juicesharp/rpiv-ask-user-question@^2.1.0":
   version "2.1.0"
   resolved "https://registry.npmmirror.com/@juicesharp/rpiv-ask-user-question/-/rpiv-ask-user-question-2.1.0.tgz#d6e9fc19b7740a9af4b4320192ecf477becb60b3"
   integrity sha512-YU/ErypXm24MFkV15MVkb4cUnZ6ujshfY0Cu2dxQROM/rrKd1j77bXp3HOXNyOrK0tz6iC0qzDfK4Ir0vvjK3w==
   dependencies:
     "@juicesharp/rpiv-config" "^2.1.0"
+    typebox "^1.1.24"
+
+"@juicesharp/rpiv-ask-user-question@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.npmmirror.com/@juicesharp/rpiv-ask-user-question/-/rpiv-ask-user-question-2.4.0.tgz#e0ec4c6b1cb051b1a51402f3670236d440d48ba6"
+  integrity sha512-JVWc6CrePUgAEP3g6C3vrJBqZ6JSS56HQy7+2QZBdwwtcxqCNCHdPgXMJ43sexeJvusSJKTadeDJcc/4kuJEGA==
+  dependencies:
+    "@juicesharp/rpiv-config" "^2.4.0"
     typebox "^1.1.24"
 
 "@juicesharp/rpiv-config@^2.0.0":
@@ -524,6 +522,13 @@
   version "2.1.0"
   resolved "https://registry.npmmirror.com/@juicesharp/rpiv-config/-/rpiv-config-2.1.0.tgz#bfc82c4a6f0d282b313b631275bccd5317ffb0e2"
   integrity sha512-bplWDHnjfa3WllR8mxeLpOks2+x34M36q4iOtmS72L2o+oPXAdkxpZzhG6rYJ/LpzNOOxe3MVYxr+IGrFtcy8w==
+  dependencies:
+    typebox "^1.1.24"
+
+"@juicesharp/rpiv-config@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.npmmirror.com/@juicesharp/rpiv-config/-/rpiv-config-2.4.0.tgz#cf23ca08a38710d5e182d4bf5b345e51a43b7c8e"
+  integrity sha512-yUeDLfpAeKv3fdoBsye6bDy8M+TOQDAo8wX7DY9Qqyh60dT65AmWT7HQ/BOc3o08n/5TrwTlX9EnZcPAcgz4pw==
   dependencies:
     typebox "^1.1.24"
 
@@ -1579,7 +1584,7 @@ gcp-metadata@8.1.2:
     google-logging-utils "^1.0.0"
     json-bigint "^1.0.0"
 
-get-east-asian-width@1.6.0, get-east-asian-width@^1.3.0:
+get-east-asian-width@1.6.0:
   version "1.6.0"
   resolved "https://registry.npmmirror.com/get-east-asian-width/-/get-east-asian-width-1.6.0.tgz"
   integrity sha512-QRbvDIbx6YklUe6RxeTeleMR0yv3cYH6PsPZHcnVn7xv7zO1BHN8r0XETu8n6Ye3Q+ahtSarc3WgtNWmehIBfA==
@@ -1872,11 +1877,6 @@ jws@^4.0.0:
     jwa "^2.0.1"
     safe-buffer "^5.0.1"
 
-koffi@^2.9.0:
-  version "2.16.3"
-  resolved "https://registry.npmmirror.com/koffi/-/koffi-2.16.3.tgz"
-  integrity sha512-E9y1AsgYGlaxMhcZzHr8y96QF2U5XzA12GGVAfbWqIubTwPNMXQarfBzePNXHe0xtIEtNd6ifAv3GAKYGUeBAQ==
-
 linkedom@^0.16.0:
   version "0.16.11"
   resolved "https://registry.npmmirror.com/linkedom/-/linkedom-0.16.11.tgz"
@@ -1913,11 +1913,6 @@ lru-cache@^11.0.0, lru-cache@^11.1.0:
   version "11.5.2"
   resolved "https://registry.npmmirror.com/lru-cache/-/lru-cache-11.5.2.tgz"
   integrity sha512-4pfM1Ff0x50o0tQwb5ucw/RzNyD0/YJME6IVcStalZuMWxdt3sR3huStTtxz4PUmvZfRguvDejasvQ2kifR11g==
-
-marked@15.0.12, marked@^15.0.12:
-  version "15.0.12"
-  resolved "https://registry.npmmirror.com/marked/-/marked-15.0.12.tgz"
-  integrity sha512-8dD6FusOQSrpv9Z1rdNMdlSgQOIP880DHqnohobOmYLElGEqAL/JvxvuxZO16r4HtjTlfPRDC1hbvxC9dPN2nA==
 
 marked@18.0.5:
   version "18.0.5"

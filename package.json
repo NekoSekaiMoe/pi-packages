@@ -10,6 +10,10 @@
   "scripts": {
     "typecheck": "tsgo --noEmit -p tsconfig.base.json"
   },
+  "resolutions": {
+    "@earendil-works/pi-tui": "0.81.0",
+    "@earendil-works/pi-agent-core": "0.81.0"
+  },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "*",
     "@typescript/native-preview": "^7.0.0-dev.20260707.2"

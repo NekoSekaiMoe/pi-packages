@@ -1,44 +1,190 @@
 # @NekoSekaiMoe/pi-smart-flow
 
-A lightweight delegation-experience layer for the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent), built to complement [pi-subagents](https://www.npmjs.com/package/pi-subagents). Three pieces, no orchestration runtime:
+A lightweight workflow extension for the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent). It improves delegation guidance and long-running command handling without introducing its own orchestration runtime.
 
-## 1. Delegation nudge
+The package contains three independent pieces:
 
-Appends a compact `<delegation_guidance>` block to the system prompt on every agent start — when to delegate (multi-file exploration, bulk output, independent workstreams) vs. work inline (known-file read, single-symbol lookup), how to write the task contract (GOAL / CONTEXT / EXPECTED OUTPUT / STOP RULES), and async-first usage.
+1. a system-prompt nudge for effective `subagent` use;
+2. an adaptive foreground/background shell tool named `bash_bg`; and
+3. a provider-based observation tool named `observe`.
 
-- Only injected when the `subagent` tool is actually active (no pi-subagents → no misleading guidance).
-- Constant string: keeps the prompt-cache prefix stable.
-- Disable with `PI_SMART_FLOW_NUDGE=0`.
-
-## 2. `bash_bg` — adaptive shell
-
-Ported from pi-maestro-flow. Six actions: `run | start | status | wait | kill | list`.
-
-- `run` (recommended default) blocks like the built-in `bash` tool for up to `timeout` seconds; if the command is still running it auto-backgrounds and returns a `jobId`. Completion injects a `bash-bg-complete` message with `triggerTurn`, so the agent wakes up on its own — no polling.
-- Output is captured to a temp log file (16 MB cap, 64 KB in-memory tail); `kill` terminates the whole process tree (SIGTERM → SIGKILL escalation; `taskkill /T /F` on Windows).
-- Re-announces running jobs after compaction; kills all jobs on session shutdown (no orphans).
-- Emits `bash-bg:update` / answers `bash-bg:query` events for any UI that wants a live job panel.
-
-## 3. `observe` — blocking observation
-
-Ported from pi-maestro-flow. One status/wait/watch interface over pluggable observation providers:
-
-- `status`: one-shot snapshot · `wait`: block on an all/any/count barrier (default timeout 10 min) · `watch`: poll and return the full status-transition timeline.
-- Targets are `{ kind, id }`. `bash_bg` registers itself as a provider automatically; other extensions can join via `registerObservationProvider` (see `src/observation.ts`).
-
-## Usage
+## Installation
 
 ```bash
-pi -e ./src/index.ts
 pi install npm:@NekoSekaiMoe/pi-smart-flow
 ```
 
-No commands, no config files. All three pieces activate on load.
+For local development from this package directory:
 
-## Attribution
+```bash
+pi -e ./src/index.ts
+```
 
-`src/bash-bg.ts`, `src/observation.ts`, `src/observe.ts`, and `src/quiet-render.ts` are ported from [pi-maestro-flow](https://github.com/catlog22/pi-maestro-flow) (MIT, Copyright (c) 2026 catlog22), decoupled from its teammate runtime. The nudge wording is inspired by its `.pi/SYSTEM.md`.
+There are no slash commands or configuration files. All three components register when the extension loads.
 
-## License
+## Relationship to `pi-subagents`
 
-BSD-2-Clause (ported files remain MIT © catlog22, as noted in their headers).
+`pi-smart-flow` complements a separately installed subagent extension. It does not create agents, schedule chains, manage worktrees, or replace `pi-subagents`.
+
+Only the delegation nudge depends on the presence of an active tool named `subagent`. `bash_bg` and `observe` remain useful on their own.
+
+## Delegation nudge
+
+On `before_agent_start`, the extension appends a stable `<delegation_guidance>` block to the current system prompt when both conditions are true:
+
+- `PI_SMART_FLOW_NUDGE` is not `0`; and
+- `pi.getActiveTools()` includes `subagent`.
+
+The guidance tells the model to delegate multi-file exploration, bulky output, and independent workstreams while keeping small known-file tasks inline. It also recommends:
+
+- async-first delegation;
+- explicit `GOAL`, `CONTEXT`, `EXPECTED OUTPUT`, and `STOP RULES`;
+- file-only outputs for large reports;
+- a single writer per working directory; and
+- a fresh investigation or user decision after repeated failures.
+
+The text is constant so repeated turns keep a stable prompt-cache prefix.
+
+Disable only this feature with:
+
+```bash
+PI_SMART_FLOW_NUDGE=0 pi
+```
+
+This does not disable `bash_bg` or `observe`.
+
+## `bash_bg`: adaptive shell execution
+
+`bash_bg` handles commands that may outlive a normal blocking tool call.
+
+### Actions
+
+| Action | Behavior |
+| --- | --- |
+| `run` | Start a command and block for up to `timeout` seconds. Return normal output if it finishes; otherwise convert it to a tracked background job and return a `jobId`. |
+| `start` | Start in the background immediately and return a `jobId`. |
+| `status` | Read one job's current state and recent output. |
+| `wait` | Block for one job until it finishes or the requested wait timeout expires. |
+| `kill` | Terminate the job's process tree. |
+| `list` | List tracked jobs. |
+
+Use `run` when command duration is uncertain:
+
+```json
+{
+  "action": "run",
+  "command": "yarn typecheck",
+  "timeout": 30
+}
+```
+
+Use `start` for servers, watchers, log followers, and clearly long-running work:
+
+```json
+{
+  "action": "start",
+  "command": "yarn dev",
+  "cwd": "/workspace/project"
+}
+```
+
+### Completion behavior
+
+When a background job finishes, the extension injects a `bash-bg-complete` message with turn triggering enabled. The agent can continue without repeatedly polling `status`.
+
+Running jobs are re-announced after context compaction. On session shutdown, tracked jobs are terminated so they do not become orphan processes.
+
+### Output and process management
+
+- Output is streamed to a temporary log file.
+- The in-memory tail is capped at 64 KB.
+- Log retention is capped at 16 MB by default.
+- Truncated results include the log path and a command for viewing it.
+- Unix termination targets the process group, escalating from `SIGTERM` to `SIGKILL` when necessary.
+- Windows uses `taskkill /T /F` to terminate the tree.
+- The default implementation permits up to 16 active jobs and retains up to 64 completed jobs.
+
+Job states include `running`, `stopping`, `completed`, `failed`, and `killed`. `bash_bg` also emits `bash-bg:update` and answers `bash-bg:query` events for UI extensions that want a live job panel.
+
+## `observe`: unified status and waiting
+
+`observe` provides one interface for one or more background systems. Targets have a provider kind and provider-specific ID:
+
+```json
+{
+  "kind": "bash_bg",
+  "id": "job-id"
+}
+```
+
+`bash_bg` registers itself as an observation provider automatically. Other extensions can register providers through `registerObservationProvider()` from `src/observation.ts`.
+
+### Actions
+
+#### `status`
+
+Returns a one-shot snapshot for every target.
+
+#### `wait`
+
+Blocks on a barrier with one overall timeout:
+
+- `waitMode: "all"` waits for every target;
+- `waitMode: "any"` returns after the first target settles; and
+- `waitMode: "count"` returns after `waitCount` targets settle.
+
+Set `until: "completed"` to require terminal lifecycle completion rather than the earlier `result-ready` boundary.
+
+#### `watch`
+
+Polls all targets until `timeoutMs` and returns the status-transition timeline, recording changes such as:
+
+```text
+active → stopping → settled
+```
+
+Use this when the progression itself matters. For a simple wait, prefer `wait` because it uses the provider's blocking mechanism instead of a polling timeline.
+
+### Detail levels
+
+| Detail | Intended use |
+| --- | --- |
+| `summary` | Compact state and outcome; default |
+| `tail` | Recent target detail |
+| `full` | Expanded recent output and metadata |
+
+The observation registry is process-global under a shared symbol, allowing cooperating extensions to discover providers without direct imports. Providers advertise capabilities such as inspect, wait, cancel, message, or supervision.
+
+## Recommended usage
+
+- Use built-in `bash` for short, bounded commands.
+- Use `bash_bg.run` when duration is uncertain and foreground output is still desirable.
+- Use `bash_bg.start` when the command should be asynchronous immediately.
+- Do not poll a background job in a tight loop; rely on completion notifications or one bounded `observe.wait`.
+- Use `observe` for multi-target barriers and mixed provider kinds.
+- Request `detail: "full"` only when output is needed; summary snapshots preserve agent context.
+
+## Architecture
+
+```text
+src/index.ts        registers all three components
+src/nudge.ts        conditional system-prompt augmentation
+src/bash-bg.ts      jobs, logs, process trees, notifications, and provider adapter
+src/observation.ts  provider registry and status/wait/watch engine
+src/observe.ts      LLM-callable observe tool and schema
+src/quiet-render.ts compact TUI rendering helpers
+```
+
+`bash_bg` and the observation implementation were ported from `pi-maestro-flow` and decoupled from its teammate runtime. The package deliberately keeps orchestration out of scope.
+
+## Limitations and security
+
+- Shell commands run with the same permissions and environment as Pi. Tool approval and repository trust still matter.
+- Output limits prevent unbounded memory and log growth, but commands can consume CPU, network, disk, and child processes until they finish or are killed.
+- Completion notifications wake the agent; they do not guarantee that the next model action is correct.
+- Only installed observation providers can resolve a target kind. Unknown providers return a `not-found` observation.
+- Process-tree termination is best effort across operating systems and unusual daemonization strategies.
+
+## Attribution and license
+
+BSD-2-Clause. `bash-bg.ts`, `observation.ts`, `observe.ts`, and `quiet-render.ts` are ported from `pi-maestro-flow` and retain MIT attribution to catlog22 in their source headers.

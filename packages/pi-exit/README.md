@@ -1,31 +1,57 @@
 # @NekoSekaiMoe/pi-exit
 
-Adds an `/exit` command to the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent) — a friendly alias for the built-in `/quit`.
+A tiny extension for the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent) that adds `/exit` as a friendly alias for the built-in `/quit` command.
 
 ## Why
 
-Pi ships `/quit`, but muscle memory from other shells and REPLs (`bash`, `python`, `node`, `psql`, …) reaches for `exit`. This extension makes `/exit` work too, delegating to the same graceful-shutdown path `/quit` uses.
+Pi uses `/quit`, while shells and REPLs such as Bash, Python, Node.js, and `psql` train users to type `exit`. This package preserves that muscle memory without replacing or shadowing Pi's built-in command.
 
-## What it does
-
-Registers a single `/exit` command that calls `ctx.shutdown()` — the documented "gracefully shutdown pi and exit" API. This fires the `session_shutdown` event (reason `quit`), so other extensions get a chance to flush their state before the process exits. Behaviorally identical to `/quit`.
-
-## Install
+## Installation
 
 ```bash
-# From npm
 pi install npm:@NekoSekaiMoe/pi-exit
+```
 
-# Local development
+For local development from this package directory:
+
+```bash
 pi -e ./src/index.ts
 ```
 
 ## Usage
 
-```
+```text
 /exit
 ```
 
+Arguments after `/exit` are ignored.
+
+## How it works
+
+The extension registers one command with `pi.registerCommand("exit", ...)`. Its handler calls:
+
+```ts
+ctx.shutdown();
+```
+
+This is Pi's graceful shutdown API—the same shutdown path used by `/quit`. It emits the normal `session_shutdown` lifecycle event so other extensions can flush state, stop jobs, or release resources before the process exits.
+
+The package deliberately does **not**:
+
+- call `process.exit()` directly;
+- rewrite `/exit` into a synthetic `/quit` message;
+- change the behavior of Pi's built-in `/quit`; or
+- add any configuration, tools, or background services.
+
+## Source
+
+```text
+src/index.ts   command registration and shutdown handler
+package.json   Pi extension entry point and npm metadata
+```
+
+Pi loads `src/index.ts` directly; there is no build step.
+
 ## License
 
-BSD-2-Clause
+BSD-2-Clause.
