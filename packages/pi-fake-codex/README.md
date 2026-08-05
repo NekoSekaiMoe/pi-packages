@@ -1,6 +1,6 @@
 # @NekoSekaiMoe/pi-fake-codex
 
-Makes the [Pi coding agent](https://github.com/badlogic/pi-mono) impersonate the official OpenAI Codex CLI (`codex_cli_rs`) on **Codex Responses API** requests — at **two** layers: the identity headers *and* (for the plain `openai-responses` path) the request body.
+Makes the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent) impersonate the official OpenAI Codex CLI (`codex_cli_rs`) on **Codex Responses API** requests — at **two** layers: the identity headers *and* (for the plain `openai-responses` path) the request body.
 
 ## What it does
 

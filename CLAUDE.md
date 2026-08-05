@@ -4,10 +4,13 @@ Guidance for Claude Code and other AI agents working in this repository.
 
 ## What this is
 
-A yarn-workspaces monorepo of extensions ("packages") for the [Pi coding agent](https://github.com/badlogic/pi-mono), published under the `@NekoSekaiMoe/*` scope.
+A yarn-workspaces monorepo of extensions ("packages") for the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent), published under the `@NekoSekaiMoe/*` scope.
 
 - `packages/pi-exit` — registers `/exit` as an alias for the built-in `/quit`.
+- `packages/pi-fake-codex` — impersonates Codex CLI for Responses-API requests and adds an `apply_patch` tool.
 - `packages/pi-init` — registers `/init`, which injects an `AGENTS.md`-generation prompt (a command-driven replacement for the auto-invoked `init` skill).
+- `packages/pi-smart-flow` — lightweight delegation experience (delegation nudge, `bash_bg`, `observe`).
+- `packages/pi-ui` — reskins the interactive TUI with Codex-style gradient, working shimmer, and flat tool rows.
 
 ## How Pi loads extensions
 

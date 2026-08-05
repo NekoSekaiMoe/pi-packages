@@ -1,6 +1,6 @@
 # @NekoSekaiMoe/pi-ui
 
-A UI reskin for the [Pi coding agent](https://github.com/badlogic/pi-mono) that
+A UI reskin for the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent) that
 gives the interactive TUI a Codex-style look:
 
 - **Open gradient input** — pink-to-cyan top/bottom rules, a pink left accent,

@@ -1,6 +1,6 @@
 # @NekoSekaiMoe/pi-smart-flow
 
-A lightweight delegation-experience layer for the [Pi coding agent](https://github.com/badlogic/pi-mono), built to complement [pi-subagents](https://www.npmjs.com/package/pi-subagents). Three pieces, no orchestration runtime:
+A lightweight delegation-experience layer for the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent), built to complement [pi-subagents](https://www.npmjs.com/package/pi-subagents). Three pieces, no orchestration runtime:
 
 ## 1. Delegation nudge
 

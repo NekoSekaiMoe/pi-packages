@@ -1,6 +1,6 @@
 # @NekoSekaiMoe/pi-exit
 
-Adds an `/exit` command to the [Pi coding agent](https://github.com/badlogic/pi-mono) — a friendly alias for the built-in `/quit`.
+Adds an `/exit` command to the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent) — a friendly alias for the built-in `/quit`.
 
 ## Why
 

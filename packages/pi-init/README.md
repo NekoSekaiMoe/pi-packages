@@ -1,6 +1,6 @@
 # @NekoSekaiMoe/pi-init
 
-Adds an `/init` command to the [Pi coding agent](https://github.com/badlogic/pi-mono) that generates a high-quality `AGENTS.md` contributor guide for the current repository.
+Adds an `/init` command to the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent) that generates a high-quality `AGENTS.md` contributor guide for the current repository.
 
 ## Why
 
