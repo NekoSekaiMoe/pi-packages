@@ -1,0 +1,32 @@
+{
+  "name": "@NekoSekaiMoe/pi-smart-edit",
+  "version": "0.1.0",
+  "description": "Hashline-style line-anchored editing for the Pi coding agent: read results carry [path#TAG] content-hash anchors and numbered lines, and a hash_edit tool applies PUT/CUT/REM patches that reject stale anchors before they corrupt code",
+  "license": "BSD-2-Clause",
+  "author": "NekoSekaiMoe",
+  "keywords": [
+    "pi",
+    "pi-coding-agent",
+    "pi-extension",
+    "pi-package",
+    "hashline",
+    "edit",
+    "patch",
+    "content-hash"
+  ],
+  "files": [
+    "src/",
+    "README.md"
+  ],
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "dependencies": {
+    "typebox": "^1.0.0"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  }
+}

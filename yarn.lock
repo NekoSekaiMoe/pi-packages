@@ -2529,6 +2529,11 @@ typebox@1.1.38, typebox@^1.1.24:
   resolved "https://registry.npmmirror.com/typebox/-/typebox-1.1.38.tgz"
   integrity sha512-pZ0aQPmMmXoUvSbeuWf/Hzsc+avNw/Zd6VeE8CFgkVGWyuHPJvqeJJDeJqLve+K70LvjYIoleGcoJHPT17cWoA==
 
+typebox@^1.0.0:
+  version "1.3.11"
+  resolved "https://registry.npmmirror.com/typebox/-/typebox-1.3.11.tgz#974cb9b0b8d2d7cac4c1bd2ee61ef95a73cef818"
+  integrity sha512-tZGKIS02Opbh4EYMmAEVuXl+y3EQJ9ZlkitLZ1CmFCY4ZOqr/xWR9dDSCFmIjNDICGMWkOqMh6WxGTyRXqcSGQ==
+
 uhyphen@^0.2.0:
   version "0.2.0"
   resolved "https://registry.npmmirror.com/uhyphen/-/uhyphen-0.2.0.tgz"

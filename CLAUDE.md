@@ -9,6 +9,7 @@ A yarn-workspaces monorepo of extensions ("packages") for the [Pi coding agent](
 - `packages/pi-exit` — registers `/exit` as an alias for the built-in `/quit`.
 - `packages/pi-fake-codex` — impersonates Codex CLI for Responses-API requests and adds an `apply_patch` tool.
 - `packages/pi-init` — registers `/init`, which injects an `AGENTS.md`-generation prompt (a command-driven replacement for the auto-invoked `init` skill).
+- `packages/pi-smart-edit` — hashline-style line-anchored editing: `[path#TAG]` content-hash anchors on read results and a `hash_edit` patch tool that rejects stale anchors.
 - `packages/pi-smart-flow` — lightweight delegation experience (delegation nudge, `bash_bg`, `observe`).
 - `packages/pi-ui` — reskins the interactive TUI with Codex-style gradient, working shimmer, and flat tool rows.
 
