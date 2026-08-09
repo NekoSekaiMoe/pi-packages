@@ -2,11 +2,12 @@
 
 A lightweight workflow extension for the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent). It improves delegation guidance and long-running command handling without introducing its own orchestration runtime.
 
-The package contains three independent pieces:
+The package contains four independent pieces:
 
 1. a system-prompt nudge for effective `subagent` use;
-2. an adaptive foreground/background shell tool named `bash_bg`; and
-3. a provider-based observation tool named `observe`.
+2. an adaptive foreground/background shell tool named `bash_bg`;
+3. a provider-based observation tool named `observe`; and
+4. a compact-thinking mode that replaces the raw thinking stream with a ≤3-line summary.
 
 ## Installation
 
@@ -106,6 +107,18 @@ Running jobs are re-announced after context compaction. On session shutdown, tra
 
 Job states include `running`, `stopping`, `completed`, `failed`, and `killed`. `bash_bg` also emits `bash-bg:update` and answers `bash-bg:query` events for UI extensions that want a live job panel.
 
+## Compact thinking
+
+`/compact-thinking [on|off]` toggles compact-thinking mode (persisted in `<agentDir>/pi-smart-flow.json`, default off).
+
+When enabled:
+
+- Pi's native `hideThinkingBlock` setting is turned on so raw thinking blocks no longer stream into the transcript. If pi-smart-flow flipped that setting for you, disabling compact thinking restores it; the live-session UI may need a restart (or a manual toggle in `/settings`) to apply.
+- Thinking duration is measured from the `thinking_start`/`thinking_end` stream events.
+- On every finalized assistant message, the thinking trace is condensed into a transcript entry styled like a pi-ui tool row — a `• Thought 12s` header (dot + bold verb + dim duration) with the body indented underneath in the thinking color. Traces of three non-empty lines or fewer are shown verbatim; longer traces are summarized by a nested call to the current model and marked with a dim `· summary` suffix.
+
+Summary entries are TUI-only (`appendEntry`): the session history sent back to the LLM keeps the original thinking blocks untouched, so provider-side thinking signatures (e.g. Anthropic's) stay valid. Summaries only appear while thinking blocks are hidden — with raw thinking visible, a summary would be duplicate noise. If the nested call fails or no model is available, the first three lines of the trace are shown with an ellipsis instead.
+
 ## `observe`: unified status and waiting
 
 `observe` provides one interface for one or more background systems. Targets have a provider kind and provider-specific ID:
@@ -167,11 +180,12 @@ The observation registry is process-global under a shared symbol, allowing coope
 ## Architecture
 
 ```text
-src/index.ts        registers all three components
+src/index.ts        registers all four components
 src/nudge.ts        conditional system-prompt augmentation
 src/bash-bg.ts      jobs, logs, process trees, notifications, and provider adapter
 src/observation.ts  provider registry and status/wait/watch engine
 src/observe.ts      LLM-callable observe tool and schema
+src/compact-thinking.ts  thinking-summary mode and /compact-thinking command
 src/quiet-render.ts compact TUI rendering helpers
 ```
 
