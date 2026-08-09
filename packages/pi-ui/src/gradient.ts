@@ -1,4 +1,4 @@
-/** Truecolor helpers shared by the input frame and working shimmer. */
+/** Truecolor helpers shared by the input frame and status dot. */
 
 export type Rgb = readonly [number, number, number];
 
@@ -10,18 +10,6 @@ export const FRAME_STOPS: readonly Rgb[] = [
   [247, 182, 213],
   [207, 190, 235],
   [169, 220, 244],
-];
-
-/** Moving rainbow shimmer: red -> orange -> yellow -> green -> cyan -> blue -> violet -> red. */
-export const WORKING_STOPS: readonly Rgb[] = [
-  [255, 90, 90],
-  [255, 175, 70],
-  [250, 225, 85],
-  [105, 230, 130],
-  [70, 215, 235],
-  [110, 155, 255],
-  [195, 125, 255],
-  [255, 90, 90],
 ];
 
 export function fgRgb(text: string, [r, g, b]: Rgb): string {

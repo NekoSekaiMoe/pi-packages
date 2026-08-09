@@ -8,7 +8,7 @@ A Codex-style reskin for the interactive TUI of the [Pi coding agent](https://gi
 
 - **Open gradient editor** with pink-to-cyan rules, a left accent, and an embedded model/provider/thinking row.
 - **Compact footer** that preserves extension statuses and displays Git branch, context usage, token totals, cache usage, and cost.
-- **Animated working state** with a rainbow shimmer, elapsed time, retry/compaction styling, and a persistent `Worked for Ns` transcript entry.
+- **Animated working state** with an omp-style theme-color shimmer sweep (dim → muted → accent, bold crest), elapsed time, retry/compaction styling, and a persistent `Worked for Ns` transcript entry.
 - **Todo integration** that mirrors the active plan step into the working line and suppresses the duplicate todo widget.
 - **Flat subagent widget** that turns `pi-subagents` async-job trees into compact status rows.
 - **Flat tool rendering** for built-in, extension, MCP, and future tools without replacing their execution logic.
@@ -51,7 +51,7 @@ Context usage changes color at approximately 70% and 90%. Values come from Pi's 
 
 ### Working shimmer and elapsed entries
 
-On `agent_start`, the extension starts a 90 ms animation timer and updates Pi's working message. On `agent_settled`, it stops the timer, clears the message, and appends a `pi-ui-elapsed` entry such as:
+On `agent_start`, the extension starts a ~30 fps animation timer and sweeps a cosine band across Pi's working message using theme colors, matching omp's classic shimmer. On `agent_settled`, it stops the timer, clears the message, and appends a `pi-ui-elapsed` entry such as:
 
 ```text
 Worked for 12s

@@ -1,14 +1,19 @@
-/** Animated Codex-style status shimmer and elapsed transcript row. */
+/** Animated omp-style status shimmer and elapsed transcript row. */
 
 import type { ExtensionAPI, ExtensionContext, Theme, WorkingIndicatorOptions } from "@earendil-works/pi-coding-agent";
 import { Loader, Text } from "@earendil-works/pi-tui";
-import { fgRgb, gradientText, WORKING_STOPS } from "./gradient.ts";
+import { fgRgb } from "./gradient.ts";
+import { HINT_SHIMMER_PALETTE, MAIN_SHIMMER_PALETTE, shimmerSegments, shimmerText } from "./shimmer.ts";
 
-const INTERVAL_MS = 90;
-const PHASE_FRAMES = 14;
+// ~30fps so the fixed-velocity band (30 cells/s) advances <= 1 cell per frame,
+// matching omp's loader cadence.
+const INTERVAL_MS = 1000 / 30;
 const ELAPSED_ENTRY_TYPE = "pi-ui-elapsed";
 const LOADER_ORIGINAL_UPDATE = Symbol.for("@NekoSekaiMoe/pi-ui:loader-original-update");
 const MAX_STEP_CHARS = 48;
+
+/** Theme captured from the latest event context, for the Loader prototype patch. */
+let activeTheme: Theme | undefined;
 
 function indicator(): WorkingIndicatorOptions {
   return { frames: [fgRgb("·", [34, 197, 94])], intervalMs: INTERVAL_MS };
@@ -61,15 +66,18 @@ function currentPlanStep(): PlanStep | undefined {
   return { done: planTodos.length - open.length, total: planTodos.length, text: truncateStep(current.text) };
 }
 
-function workingMessage(theme: Theme, elapsedMs: number, frame: number): string {
-  const phase = (frame % PHASE_FRAMES) / PHASE_FRAMES;
+function workingMessage(theme: Theme, elapsedMs: number): string {
   const step = currentPlanStep();
   // While a todo plan is being implemented, the step list replaces the word
   // "Working"; a finished/cleared plan falls back to the plain label.
   const label = step ? `${step.done}/${step.total} ${step.text}` : "Working";
-  const word = gradientText(label, WORKING_STOPS, phase);
-  const suffix = theme.fg("dim", ` (${formatElapsed(elapsedMs)} · esc to interrupt)`);
-  return `${word}${suffix}`;
+  return shimmerSegments(
+    [
+      { text: label, palette: MAIN_SHIMMER_PALETTE },
+      { text: ` (${formatElapsed(elapsedMs)} · esc to interrupt)`, palette: HINT_SHIMMER_PALETTE },
+    ],
+    theme,
+  );
 }
 
 type LoaderUpdate = (this: StatusLoaderState) => void;
@@ -90,7 +98,6 @@ function installStatusGradients(): () => void {
 
     const originalUpdate =
       (prototype[LOADER_ORIGINAL_UPDATE] as LoaderUpdate | undefined) ?? currentUpdate as LoaderUpdate;
-    const phases = new WeakMap<object, number>();
     const patchedUpdate: LoaderUpdate = function (this: StatusLoaderState): void {
       const message = typeof this.message === "string" ? this.message : "";
       const isRetryOrCompaction =
@@ -104,9 +111,8 @@ function installStatusGradients(): () => void {
         return;
       }
 
-      const phase = phases.get(this as object) ?? 0;
-      phases.set(this as object, (phase + 1) % PHASE_FRAMES);
-      this.setText(`${fgRgb("·", [34, 197, 94])} ${gradientText(message, WORKING_STOPS, phase / PHASE_FRAMES)}`);
+      const word = activeTheme ? shimmerText(message, activeTheme) : message;
+      this.setText(`${fgRgb("·", [34, 197, 94])} ${word}`);
       this.ui?.requestRender?.();
     };
 
@@ -124,7 +130,6 @@ function installStatusGradients(): () => void {
 export function installWorking(pi: ExtensionAPI): () => void {
   let timer: ReturnType<typeof setInterval> | undefined;
   let startedAt: number | undefined;
-  let frame = 0;
   const restoreStatusGradients = installStatusGradients();
 
   const stop = () => {
@@ -135,8 +140,7 @@ export function installWorking(pi: ExtensionAPI): () => void {
 
   const render = (ctx: ExtensionContext) => {
     if (startedAt === undefined) return;
-    ctx.ui.setWorkingMessage(workingMessage(ctx.ui.theme, Date.now() - startedAt, frame));
-    frame++;
+    ctx.ui.setWorkingMessage(workingMessage(ctx.ui.theme, Date.now() - startedAt));
   };
 
   pi.registerEntryRenderer(ELAPSED_ENTRY_TYPE, (entry, _options, theme) => {
@@ -148,6 +152,7 @@ export function installWorking(pi: ExtensionAPI): () => void {
   pi.on("session_start", (_event, ctx) => {
     planTodos = [];
     if (ctx.mode !== "tui") return;
+    activeTheme = ctx.ui.theme;
     ctx.ui.setWorkingIndicator(indicator());
   });
 
@@ -159,9 +164,9 @@ export function installWorking(pi: ExtensionAPI): () => void {
 
   pi.on("agent_start", (_event, ctx) => {
     if (ctx.mode !== "tui") return;
+    activeTheme = ctx.ui.theme;
     if (startedAt === undefined) {
       startedAt = Date.now();
-      frame = 0;
     }
     ctx.ui.setWorkingIndicator(indicator());
     render(ctx);
@@ -182,6 +187,7 @@ export function installWorking(pi: ExtensionAPI): () => void {
     stop();
     startedAt = undefined;
     planTodos = [];
+    activeTheme = undefined;
     restoreStatusGradients();
   };
 
