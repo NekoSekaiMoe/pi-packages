@@ -8,16 +8,14 @@ Each directory under [`packages/`](packages/) is an independent Pi package with 
 
 | Package | Activation | Purpose |
 | --- | --- | --- |
-| [`@NekoSekaiMoe/pi-exit`](packages/pi-exit/) | `/exit` | Adds a familiar alias for `/quit` and uses Pi's graceful shutdown path. |
-| [`@NekoSekaiMoe/pi-init`](packages/pi-init/) | `/init [instructions]` | Starts an agent turn that inspects the repository and creates a concise `AGENTS.md`. |
+| [`@NekoSekaiMoe/pi-extra-cmd`](packages/pi-extra-cmd/) | `/exit`, `/init`, `/context` | Extra slash commands: a `/quit` alias, `AGENTS.md` generation, and a context-window usage breakdown with per-category composition. |
 | [`@NekoSekaiMoe/pi-ui`](packages/pi-ui/) | Automatic on load | Reskins the interactive TUI with a gradient editor, compact usage footer, animated working state, todo/subagent integration, and flat tool rows. |
 | [`@NekoSekaiMoe/pi-fake-codex`](packages/pi-fake-codex/) | Automatic on load | Makes Responses API traffic resemble official Codex CLI traffic, adds an `apply_patch` alias, and runs Codex-compatible project hooks. |
 | [`@NekoSekaiMoe/pi-smart-flow`](packages/pi-smart-flow/) | Automatic on load | Adds delegation guidance, an adaptive `bash_bg` shell tool, and a provider-based `observe` tool. |
 
 ## Which packages should I use?
 
-- Install **pi-exit** if you habitually type `/exit` in interactive programs.
-- Install **pi-init** if you want repository initialization to be an explicit command instead of a model-discovered skill.
+- Install **pi-extra-cmd** to get `/exit`, `/init`, and `/context` in one package.
 - Install **pi-ui** if you use Pi interactively and prefer a compact Codex-style terminal interface.
 - Install **pi-fake-codex** when using OpenAI Responses-compatible providers that expect Codex-shaped requests, or when your prompts expect an `apply_patch` tool. Review its hook security notes before enabling project hooks.
 - Install **pi-smart-flow** for long-running shell commands and cleaner subagent delegation. It complements `pi-subagents`; it does not implement a subagent runtime itself.
@@ -29,8 +27,7 @@ The packages are independent and can be combined.
 Install a published package with Pi:
 
 ```bash
-pi install npm:@NekoSekaiMoe/pi-exit
-pi install npm:@NekoSekaiMoe/pi-init
+pi install npm:@NekoSekaiMoe/pi-extra-cmd
 pi install npm:@NekoSekaiMoe/pi-ui
 pi install npm:@NekoSekaiMoe/pi-fake-codex
 pi install npm:@NekoSekaiMoe/pi-smart-flow

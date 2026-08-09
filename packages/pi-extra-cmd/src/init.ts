@@ -1,5 +1,5 @@
 /**
- * pi-init — Extension entry point
+ * pi-extra-cmd — /init command
  *
  * Registers an `/init` command that generates a high-quality AGENTS.md
  * contributor guide for the current repository.
@@ -13,12 +13,9 @@
  * Usage:
  *   /init                       generate AGENTS.md with the default outline
  *   /init also document the CI   append extra instructions to the prompt
- *
- *   pi -e ./src/index.ts
- *   pi install npm:@NekoSekaiMoe/pi-init
  */
 
-import { type ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 /** The core AGENTS.md generation instructions, ported from the init skill. */
 const INIT_PROMPT = `Generate a file named AGENTS.md that serves as a contributor guide for this repository.
@@ -57,7 +54,7 @@ Summarize commit message conventions found in the project's Git history. Outline
 
 (Optional) Add other sections if relevant, such as Security & Configuration Tips, Architecture Overview, or Agent-Specific Instructions.`;
 
-export default function (pi: ExtensionAPI) {
+export function registerInit(pi: ExtensionAPI) {
   pi.registerCommand("init", {
     description: "Generate an AGENTS.md contributor guide for this repository",
     handler: async (args, _ctx) => {

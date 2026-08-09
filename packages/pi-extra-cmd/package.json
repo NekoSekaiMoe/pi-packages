@@ -1,7 +1,7 @@
 {
-  "name": "@NekoSekaiMoe/pi-exit",
+  "name": "@NekoSekaiMoe/pi-extra-cmd",
   "version": "0.1.0",
-  "description": "Adds an /exit command to the Pi coding agent — a friendly alias for /quit that gracefully shuts pi down",
+  "description": "Extra slash commands for the Pi coding agent: /exit (alias for /quit), /init (generate AGENTS.md), and /context (context-window usage breakdown)",
   "license": "BSD-2-Clause",
   "author": "NekoSekaiMoe",
   "keywords": [
@@ -10,7 +10,11 @@
     "pi-extension",
     "pi-package",
     "exit",
-    "quit"
+    "quit",
+    "init",
+    "agents-md",
+    "context",
+    "tokens"
   ],
   "files": [
     "src/",

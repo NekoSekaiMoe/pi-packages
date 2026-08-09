@@ -6,9 +6,8 @@ Guidance for Claude Code and other AI agents working in this repository.
 
 A yarn-workspaces monorepo of extensions ("packages") for the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent), published under the `@NekoSekaiMoe/*` scope.
 
-- `packages/pi-exit` — registers `/exit` as an alias for the built-in `/quit`.
+- `packages/pi-extra-cmd` — extra slash commands: `/exit` (alias for the built-in `/quit`), `/init` (injects an `AGENTS.md`-generation prompt), and `/context` (context-window usage + per-category composition breakdown).
 - `packages/pi-fake-codex` — impersonates Codex CLI for Responses-API requests and adds an `apply_patch` tool.
-- `packages/pi-init` — registers `/init`, which injects an `AGENTS.md`-generation prompt (a command-driven replacement for the auto-invoked `init` skill).
 - `packages/pi-smart-edit` — hashline-style line-anchored editing: `[path#TAG]` content-hash anchors on read results and a `hash_edit` patch tool that rejects stale anchors.
 - `packages/pi-smart-flow` — lightweight delegation experience (delegation nudge, `bash_bg`, `observe`, compact-thinking summaries).
 - `packages/pi-ui` — reskins the interactive TUI with Codex-style gradient, working shimmer, and flat tool rows.
