@@ -11,14 +11,21 @@
     "typecheck": "tsgo --noEmit -p tsconfig.base.json"
   },
   "resolutions": {
-    "@earendil-works/pi-tui": "0.81.0",
-    "@earendil-works/pi-agent-core": "0.81.0"
+    "@earendil-works/pi-tui": "0.84.1",
+    "@earendil-works/pi-agent-core": "0.84.1",
+    "@earendil-works/pi-coding-agent": "0.84.1",
+    "@earendil-works/pi-ai": "0.84.1"
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "*",
     "@typescript/native-preview": "^7.0.0-dev.20260707.2"
   },
   "dependencies": {
-    "pi-dynamic-context-pruning": "^0.1.1"
+    "@juicesharp/rpiv-advisor": "^2.4.0",
+    "@zhushanwen/pi-todo": "^0.6.0",
+    "pi-dynamic-context-pruning": "^0.1.1",
+    "pi-mcp-adapter": "^2.21.1",
+    "version": "^0.1.2",
+    "view": "^1.1.1"
   }
 }

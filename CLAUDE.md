@@ -18,7 +18,7 @@ A yarn-workspaces monorepo of extensions ("packages") for the [Pi coding agent](
 - The entry point is declared in the package's `package.json` under `pi.extensions`, e.g. `"pi": { "extensions": ["./src/index.ts"] }`.
 - Pi runs the `.ts` source **directly via jiti** — there is **no build/emit step**. Do not add a bundler or expect a `dist/`.
 - `@typescript/native-preview` (the `tsgo` binary) is used **for type-checking only**.
-- Import types from `@earendil-works/pi-coding-agent` (the installed package, currently v0.80.10). At runtime Pi also aliases `@mariozechner/pi-coding-agent` to the same module, so either specifier resolves — prefer `@earendil-works/*` since that is what is on disk.
+- Import types from `@earendil-works/pi-coding-agent` (the installed package, currently v0.84.1). At runtime Pi also aliases `@mariozechner/pi-coding-agent` to the same module, so either specifier resolves — prefer `@earendil-works/*` since that is what is on disk.
 
 ## Commands
 
@@ -34,6 +34,7 @@ There is no test suite yet, and no build. Verification = `yarn typecheck` passin
 - TypeScript, 2-space indent, strict mode (see `tsconfig.base.json`).
 - Each package extends the root `tsconfig.base.json`.
 - Keep extensions small and single-purpose: register one command/handler, delegate to documented `ExtensionAPI` methods (`registerCommand`, `ctx.shutdown()`, `pi.sendUserMessage`, …) rather than reaching into internals.
+- Every `@earendil-works/*` package a package imports from (including `pi-tui`, `pi-ai`, `pi-agent-core`) must be declared in both `devDependencies` and `peerDependencies` as `"*"` — the pi host provides them at runtime (see `pi-smart-flow` for the pattern).
 - License is **BSD-2-Clause** across all packages. Keep the `license` field and README footer consistent when adding a package.
 
 ## Adding a new package
@@ -46,5 +47,5 @@ There is no test suite yet, and no build. Verification = `yarn typecheck` passin
 ## Caveats
 
 - `/quit` is a built-in command name and cannot be shadowed; that is why the alias is `/exit`.
-- The root `package.json` pins `@earendil-works/pi-tui` and `@earendil-works/pi-agent-core` to **0.81.0** via `resolutions`. Without the pin, fresh installs hoist the latest (e.g. 0.83.x) for the `*` ranges next to pi-coding-agent 0.80.10's nested 0.81.0 copy, and type identity across the two copies (private fields) breaks `yarn typecheck`. Bump the pins together with the installed pi-coding-agent.
+- The root `package.json` pins `@earendil-works/pi-coding-agent`, `@earendil-works/pi-tui`, `@earendil-works/pi-agent-core`, and `@earendil-works/pi-ai` to **0.84.1** via `resolutions`. Without the pins, fresh installs hoist the latest for the `*` ranges next to a stale nested copy, and type identity across the two copies (private fields) breaks `yarn typecheck`. Bump the pins together.
 - End-to-end behavior (`pi install`, running commands live) requires a real Pi session and cannot be verified by typecheck alone.
