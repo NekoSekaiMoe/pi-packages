@@ -43,8 +43,6 @@
     "pi-smart-fetch": "^0.3.12",
     "pi-sub-agent": "^0.1.5",
     "pi-subagents": "^0.35.1",
-    "pi-web-access": "^0.13.0",
-    "version": "^0.1.2",
-    "view": "^1.1.1"
+    "pi-web-access": "^0.13.0"
   }
 }

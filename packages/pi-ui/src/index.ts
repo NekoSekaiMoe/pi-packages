@@ -12,11 +12,17 @@
  *     lookup redirect on ToolExecutionComponent.
  *   - subagent-widget.ts -> ctx.ui.setWidget() wrap that re-renders
  *     pi-subagents' async-jobs widget as flat Codex-style rows
+ *   - thinking.ts -> Codex-style thinking rows styled like tool rows
+ *     (`• Thinking Ns` live tail, `• Thought for Ns` + model-written summary,
+ *     ctrl+t to expand) and removal of the now-superseded "Hide thinking"
+ *     settings entry
  *
  * Wiring only. Each concern lives in its own module and is installed against
  * documented ExtensionAPI / ExtensionUIContext methods:
  *   - editor.ts   -> ctx.ui.setEditorComponent() + embedded model toolbar
  *   - footer.ts   -> ctx.ui.setFooter() status toolbar
+ *   - thinking.ts -> AssistantMessageComponent/InteractiveMode/SettingsList
+ *     prototype patches (process-lifetime, like the tool renderer redirect)
  *   - working.ts  -> pi.on(agent_start/settled) + setWorkingIndicator/Message
  *     (also mirrors @zhushanwen/pi-todo steps into the Working line)
  *   - tools.ts    -> pi.registerTool() (overrides built-ins by name)
@@ -41,6 +47,7 @@ import { installFooter } from "./footer.ts";
 import { FRAME_STOPS, gradientText } from "./gradient.ts";
 import { installExternalToolRenderers, installShellRenderer, installToolRenderers } from "./tools.ts";
 import { skinSubagentWidget } from "./subagent-widget.ts";
+import { captureRenderTrigger, installThinkingDisplay } from "./thinking.ts";
 import { installWorking } from "./working.ts";
 
 const patchedThemes = new WeakSet<Theme>();
@@ -99,6 +106,15 @@ export default function (pi: ExtensionAPI) {
   // grep/find/web_search/etc. to Pi's bordered default for the rest of the
   // process, since nothing reinstalls the patch between sessions.
   installExternalToolRenderers();
+
+  // Codex-style thinking rows in tool-row style ("• Thinking Ns" + latest
+  // line while streaming, "• Thought for Ns" + the model's own one-sentence
+  // summary afterwards), ctrl+t expansion, and removal of the "Hide thinking"
+  // settings entry. Installed for the process lifetime for the same reason
+  // as the renderer redirect above; the theme and the TUI render trigger are
+  // refreshed per session_start below.
+  installThinkingDisplay(pi);
+
   let restoreShellRenderer = () => {};
 
   // Register Codex-style tool renderers at load time. Most built-ins are
@@ -121,11 +137,17 @@ export default function (pi: ExtensionAPI) {
     if (ctx.mode !== "tui") return;
     const uiState = { shellMode: false };
     installResourceHeadingGradient(ctx.ui.theme);
+    installThinkingDisplay(pi, ctx.ui.theme);
     suppressTodoWidget(ctx.ui);
     skinSubagentWidget(ctx.ui);
     restoreShellRenderer();
     restoreShellRenderer = installShellRenderer(ctx.ui.theme);
-    ctx.ui.setEditorComponent(makeReferenceEditorFactory(ctx, pi, uiState));
+    const editorFactory = makeReferenceEditorFactory(ctx, pi, uiState);
+    ctx.ui.setEditorComponent((tui, editorTheme, keybindings) => {
+      // Hand the TUI to thinking.ts so landed summaries can repaint at once.
+      captureRenderTrigger(tui);
+      return editorFactory(tui, editorTheme, keybindings);
+    });
     installFooter(ctx, uiState);
   });
 

@@ -1,0 +1,15 @@
+{
+  "name": "pi-dsh-minimal",
+  "version": "0.1.0",
+  "description": "Faithful replica of DeepSeek Harness (DSH) `minimal` agent preset inside pi: complete-persona system prompt ('You are a helpful software engineer assistant.'), persistent bash + str_replace_editor as the only tools, DSH byte-level tool descriptions and output formats.",
+  "license": "MIT",
+  "type": "module",
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  }
+}

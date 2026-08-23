@@ -52,8 +52,8 @@ const SHELL_ORIGINAL_RENDER = Symbol.for("@NekoSekaiMoe/pi-ui:bash-render");
 const TOOL_EXECUTION_ORIGINALS = Symbol.for("@NekoSekaiMoe/pi-ui:tool-execution-renderers");
 
 const ANSI_PATTERN = /\x1b\[[0-?]*[ -/]*[@-~]/g;
-const DOT_RUNNING: readonly [number, number, number] = [148, 148, 158];
-const DOT_DONE: readonly [number, number, number] = [74, 222, 128];
+export const DOT_RUNNING: readonly [number, number, number] = [148, 148, 158];
+export const DOT_DONE: readonly [number, number, number] = [74, 222, 128];
 const DOT_ERROR: readonly [number, number, number] = [244, 63, 94];
 const COMMAND_COLOR: readonly [number, number, number] = [137, 180, 250];
 const FLAG_COLOR: readonly [number, number, number] = [239, 160, 190];
