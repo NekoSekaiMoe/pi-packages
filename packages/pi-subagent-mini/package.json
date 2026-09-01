@@ -1,0 +1,14 @@
+{
+  "name": "pi-subagent-mini",
+  "version": "0.1.0",
+  "description": "Lean single-tool subagent extension for pi: spawn isolated agents, get results via completion notification.",
+  "type": "module",
+  "license": "MIT",
+  "pi": {
+    "extensions": ["./src/index.ts"]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "typebox": "*"
+  }
+}
