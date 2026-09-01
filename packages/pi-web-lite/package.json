@@ -1,0 +1,14 @@
+{
+  "name": "pi-web-lite",
+  "version": "0.1.0",
+  "description": "Minimal webfetch tool: URL -> markdown. Fallbacks: Gemini Web -> Gemini API -> Tavily.",
+  "type": "module",
+  "pi": {
+    "extensions": ["./src/index.ts"]
+  },
+  "dependencies": {
+    "@mozilla/readability": "^0.6.0",
+    "linkedom": "^0.18.0",
+    "turndown": "^7.2.0"
+  }
+}
