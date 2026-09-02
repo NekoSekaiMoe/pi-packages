@@ -4,6 +4,12 @@ A Codex-style reskin for the interactive TUI of the [Pi coding agent](https://gi
 
 `pi-ui` changes presentation, not agent behavior: model calls, tool execution, session history, todo management, and subagent scheduling remain owned by Pi and their original extensions.
 
+## Screenshots
+
+![pi-ui TUI screenshot](Screenshot_2026-08-29-16-15-41-08_84d3000e3f4017145260f7618db1d683.jpg)
+
+![pi-ui TUI screenshot with working shimmer and tool rows](Screenshot_2026-08-29-16-46-08-45_84d3000e3f4017145260f7618db1d683.jpg)
+
 ## Highlights
 
 - **Open gradient editor** with pink-to-cyan rules, a left accent, and an embedded model/provider/thinking row.
@@ -149,7 +155,7 @@ The editor, footer, normal working state, and elapsed entry use supported extens
 - `ToolRenderContext` state flags; and
 - the textual widget format and key emitted by `pi-subagents`.
 
-The repository is currently aligned with Pi/TUI/core `0.81.0`. Internal hooks are guarded with shape checks and `try`/`catch`; incompatible versions should generally fall back to default or reduced rendering rather than prevent Pi from starting. Partial visual mismatches after a Pi or `pi-subagents` upgrade are still possible.
+The repository is currently aligned with Pi/TUI/core `0.84.1` (pinned via `resolutions` in the root `package.json`; bump them together). Internal hooks are guarded with shape checks and `try`/`catch`; incompatible versions should generally fall back to default or reduced rendering rather than prevent Pi from starting. Partial visual mismatches after a Pi or `pi-subagents` upgrade are still possible.
 
 ## Limitations
 

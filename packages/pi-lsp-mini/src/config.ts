@@ -23,8 +23,12 @@ export interface LspServerConfig {
 export const DEFAULT_SERVERS: LspServerConfig[] = [
   {
     id: "typescript",
-    command: "typescript-language-server",
-    args: ["--stdio"],
+    // tsserver itself is NOT an LSP server (its --stdio speaks tsserver's own
+    // wire protocol, so an LSP client would time out on initialize). Both
+    // candidates below are LSP wrappers around the local tsserver:
+    // typescript-language-server (theia) is the common choice; vtsls is the
+    // standalone VS Code tsserver language server. First one on PATH wins.
+    command: ["typescript-language-server --stdio", "vtsls --stdio"],
     include: [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"],
     rootMarkers: ["tsconfig.json", "jsconfig.json", "package.json"],
   },

@@ -15,8 +15,9 @@
  * installed pi-web-access package (files stay on disk even when that
  * package is disabled in settings). Missing pieces are skipped silently.
  */
+/// <reference lib="dom" />
 import { readFileSync } from "node:fs";
-import { Type } from "@sinclair/typebox";
+import { Type } from "typebox";
 import { Readability } from "@mozilla/readability";
 import { parseHTML } from "linkedom";
 import TurndownService from "turndown";
@@ -49,8 +50,8 @@ function truncate(text: string, max: number): string {
 	return text.slice(0, max) + "\n\n[truncated at " + max + " chars]";
 }
 
-function textResult(text: string): { content: Array<{ type: "text"; text: string }> } {
-	return { content: [{ type: "text", text }] };
+function textResult(text: string): { content: Array<{ type: "text"; text: string }>; details: {} } {
+	return { content: [{ type: "text", text }], details: {} };
 }
 
 // ---------------------------------------------------------------------------
@@ -239,6 +240,7 @@ export default function (pi: ExtensionAPI): void {
 							attempts.map((a) => "  - " + a).join("\n"),
 					},
 				],
+				details: {},
 				isError: true,
 			};
 		},
@@ -277,6 +279,7 @@ export default function (pi: ExtensionAPI): void {
 								"\nHint: set EXA_API_KEY (env or exaApiKey in ~/.pi/web-search.json) for the official Exa API path.",
 						},
 					],
+					details: {},
 					isError: true,
 				};
 			}

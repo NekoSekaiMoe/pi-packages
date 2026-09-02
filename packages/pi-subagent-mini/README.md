@@ -34,7 +34,21 @@ Max 4 concurrent subagents. `-ne` in children also prevents recursive spawning.
 ## Notes
 
 - Children are fully isolated: own minimal prompt (~1.7k tokens), ephemeral
-  (`--no-session`), results truncated at 6k chars in the notification
-  (`action=status` shows the rest).
+  (`--no-session`), launched with `--no-skills --no-prompt-templates
+  --no-context-files` so no extra context leaks in; results truncated at 6k
+  chars in the notification (`action=status` shows the rest).
 - Uses the same subprocess mechanism as the big suites (`--mode json` NDJSON
   events), just without the orchestration/TUI/config layers.
+- Interactive mode shows a live `subagent-async` widget (one row per running
+  job, refreshed every second). It deliberately reuses the same widget key as
+  `pi-subagents`, so [`pi-ui`](../pi-ui/)'s flat skin picks these jobs up too.
+
+## Usage
+
+```bash
+pi -e ./src/index.ts
+```
+
+## License
+
+MIT

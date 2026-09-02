@@ -257,7 +257,13 @@ export function registerTodoTool(
 		name: "todo",
 		label: "Todo",
 		description:
-			"Manage the session todo list. actions: add(texts[], isVerification?) | update(id/status/text) or update(updates[]) batch | delete(ids[]) | list | clear. statuses: pending/in_progress/completed/cancelled.",
+			'Manage the session todo list. statuses: pending | in_progress | completed | cancelled.\n' +
+			'Examples: add {"action":"add","texts":["write tests","run typecheck"]} · verification add {"action":"add","texts":["run yarn test"],"isVerification":true}\n' +
+			'update single {"action":"update","id":2,"status":"in_progress"} or {"action":"update","id":2,"text":"reworded"} · update batch (takes priority) {"action":"update","updates":[{"id":1,"status":"completed"},{"id":3,"text":"reworded"}]}\n' +
+			'delete {"action":"delete","ids":[1,3]} · list {"action":"list"} · clear {"action":"clear"}\n' +
+			"Don't: pass singular \"text\" to add — text is for update, add uses texts[]. " +
+			"Don't: pass singular \"id\" to delete — id is for update, delete uses ids[]. " +
+			"Don't: update with missing id — id is required.",
 		promptSnippet: "Use todo when breaking multi-step work into trackable items. Add verification todos (isVerification=true) for checks like running tests.",
 		promptGuidelines: [
 			"Break multi-step work (3+ steps) into todos; create verification todos (isVerification) for checks like running tests; batch-update via updates[].",

@@ -1,6 +1,6 @@
 # pi-extra-cmd
 
-A bundle of small extra slash commands for the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent). It merges the standalone [`pi-exit`](../pi-exit/) and [`pi-init`](../pi-init/) packages and adds a new `/context` command.
+A bundle of small extra slash commands for the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent). It carries what used to be the standalone `pi-exit` and `pi-init` packages (both retired into this bundle) and adds a newer `/context` command.
 
 ## Commands
 

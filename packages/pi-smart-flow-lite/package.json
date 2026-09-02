@@ -1,5 +1,5 @@
 {
-  "name": "@NekoSekaiMoe/pi-smart-flow",
+  "name": "@NekoSekaiMoe/pi-smart-flow-lite",
   "version": "0.1.0",
   "description": "Lightweight delegation experience for pi-subagents: a delegation nudge injected into the system prompt, an adaptive foreground/background bash_bg shell tool, and a blocking observe tool",
   "license": "BSD-2-Clause",
@@ -24,20 +24,17 @@
     ]
   },
   "dependencies": {
-    "@juicesharp/rpiv-advisor": "^2.4.0",
-    "@juicesharp/rpiv-ask-user-question": "^2.4.0",
-    "pi-web-access": "^0.13.0",
-    "typebox": "^1.1.24",
-    "version": "^0.1.2",
-    "view": "^1.1.1"
+    "typebox": "^1.1.24"
   },
   "devDependencies": {
     "@earendil-works/pi-agent-core": "*",
+    "@earendil-works/pi-ai": "*",
     "@earendil-works/pi-coding-agent": "*",
     "@earendil-works/pi-tui": "*"
   },
   "peerDependencies": {
     "@earendil-works/pi-agent-core": "*",
+    "@earendil-works/pi-ai": "*",
     "@earendil-works/pi-coding-agent": "*",
     "@earendil-works/pi-tui": "*"
   }

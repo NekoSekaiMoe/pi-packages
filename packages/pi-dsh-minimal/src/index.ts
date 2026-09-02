@@ -59,6 +59,7 @@ import { createRequire } from "node:module";
 import { dirname, isAbsolute, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { spawn, type ChildProcess } from "node:child_process";
+import type { Socket } from "node:net";
 import { existsSync, readFileSync, writeFileSync, appendFileSync, readdirSync, statSync } from "node:fs";
 
 /* ------------------------------------------------------------------ */
@@ -128,7 +129,7 @@ function maybeTruncate(content: string): string {
     : content.slice(0, MAX_OUTPUT_CHARS) + TRUNCATED_MESSAGE;
 }
 
-const textResult = (text: string) => ({ content: [{ type: "text" as const, text }] });
+const textResult = (text: string) => ({ content: [{ type: "text" as const, text }], details: {} });
 
 /* pi 的 exports 不暴露子路径，从包入口 URL 推导 system-prompt.js 动态导入。
    优先 import.meta.resolve（ESM import 条件），降级 createRequire。 */
@@ -202,9 +203,9 @@ class PersistentBash {
     this.proc.stderr?.resume();
     // 不让子进程及其管道拖住 pi 的退出
     this.proc.unref();
-    this.proc.stdin?.unref();
-    this.proc.stdout?.unref();
-    this.proc.stderr?.unref();
+    (this.proc.stdin as Socket | null)?.unref();
+    (this.proc.stdout as Socket | null)?.unref();
+    (this.proc.stderr as Socket | null)?.unref();
     return this.proc;
   }
 
@@ -629,7 +630,7 @@ export default function (pi: ExtensionAPI) {
   pi.on("before_agent_start", async (event) => {
     if (phase !== "bootstrap") return;
     if (appendLevel === "none") return { systemPrompt: PERSONA };
-    const opts = (event as { systemPromptOptions?: Record<string, unknown> })
+    const opts = (event as unknown as { systemPromptOptions?: Record<string, unknown> })
       .systemPromptOptions;
     const build = await loadBuildSystemPrompt();
     if (!opts || !build) return { systemPrompt: PERSONA };

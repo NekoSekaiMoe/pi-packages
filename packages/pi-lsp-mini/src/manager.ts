@@ -2,7 +2,8 @@ import fs from "node:fs/promises";
 import fsSync from "node:fs";
 import path from "node:path";
 import { loadServers, type LspServerConfig } from "./config.ts";
-import { LspClient, type Diagnostic } from "./client.ts";
+import { LspClient } from "./client.ts";
+import type { Diagnostic } from "./lsp-types.ts";
 
 const IGNORED_DIRS = new Set([".git", "node_modules", "vendor", "dist", "build", "target", ".venv", "venv", "__pycache__", ".cache", "out"]);
 const MAX_DIR_FILES = 200;

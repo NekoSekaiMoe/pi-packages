@@ -22,13 +22,15 @@
     "index.ts"
   ],
   "devDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
     "vitest": "^4.1.8"
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",
     "@earendil-works/pi-tui": "*",
-    "@earendil-works/pi-ai": "*",
-    "typebox": "*"
+    "@earendil-works/pi-ai": "*"
   },
   "peerDependenciesMeta": {
     "@earendil-works/pi-tui": {

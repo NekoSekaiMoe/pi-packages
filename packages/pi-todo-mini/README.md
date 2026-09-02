@@ -1,6 +1,8 @@
-# todo
+# pi-todo-mini
 
 轻量三态任务清单 — `pending` / `in_progress` / `completed`。支持 session 持久化、状态栏、双列 widget、`/todos` TUI 视图，以及延迟 steer 驱动任务推进。
+
+本包是 [`@zhushanwen/pi-todo`](https://www.npmjs.com/package/@zhushanwen/pi-todo) 的精简 fork（零运行时依赖），包内 `package.json` 名为 `todo-lite`，入口为包根部的 `index.ts`（re-export `src/index.ts`）。
 
 ## 设计定位
 
@@ -15,8 +17,10 @@
 ## 安装
 
 ```bash
-pi install npm:@zhushanwen/pi-todo
+pi -e ./index.ts   # 从本包目录
 ```
+
+上游原版可 `pi install npm:@zhushanwen/pi-todo`。
 
 ## todo tool
 
@@ -91,10 +95,8 @@ todo 扩展**自己不调用 `appendEntry`**。状态快照随 Pi 框架自动�
 ## 文件结构
 
 ```
-todo/
+pi-todo-mini/
 ├── index.ts              # 工厂入口（re-export src/index.ts）
-├── PLAN.md               # [SUPERSEDED] v2 历史计划，保留作决策记录
-├── ARCHITECTURE.md       # 架构详图（文件依赖 + steer 时序 + 事件流）
 └── src/
     ├── index.ts          # 工厂入口（创建 state + 注册 tool/command/event）
     ├── state.ts          # TodoSessionState 会话状态接口 + 工厂
@@ -104,5 +106,5 @@ todo/
     ├── render.ts         # status line / widget / tool result 三层渲染
     ├── component.ts      # /todos 的 TodoListComponent TUI 组件
     ├── commands.ts       # /todos 命令注册
-    └── __tests__/        # 单测（model 纯函数 + widget 布局 + agent_end 数据条件）
+    └── __tests__/        # 单测（vitest：model 纯函数 + widget 布局 + agent_end 数据条件）
 ```

@@ -13,17 +13,18 @@
 | `opencode` | id 含 `deepseek-v4-flash` / `deepseek-v4-pro` 即触发（无论日期后缀） |
 | 其他 | 仅 id 含 `deepseek-v4-flash-0731` / `deepseek-v4-pro-0813`（id+日期）才触发 |
 
-禁用：`PI_DSH_MINIMAL=off`。
-
 ## 配置（环境变量）
 
 | 变量 | 取值 | 默认 | 说明 |
 |---|---|---|---|
+| `PI_DSH_MINIMAL` | `off` | — | 完全禁用本扩展 |
 | `PI_DSH_MINIMAL_PROMPT` | `strict` / `append` | `strict` | strict：system prompt 字节级等于 persona（payload 级强制）；append：persona 只替换 pi 默认基础提示词，插件注入/skills/AGENTS.md 等追加保留 |
+| `PI_DSH_MINIMAL_APPEND` | `none` / `context` / `full` | 随 PROMPT | 注入滴定级别，设置后覆盖 PROMPT 开关：none=仅 persona（同 strict）；context=persona + AGENTS.md 等上下文文件；full=persona + 全部追加（同 append） |
 | `PI_DSH_MINIMAL_TOOLS` | `strict` / `append` | `strict` | strict：只有 bash + str_replace_editor；append：minimal 对在前 + 除 read/edit/write 外的默认工具 |
 | `PI_DSH_MINIMAL_UA` | `off` / 自定义字符串 | 发送 DSH UA | 门控命中后全程发送 DSH 归因请求头 `user-agent: deepseek-harness/0.1.0-rc.7 (+https://github.com/deepseek-ai/deepseek-harness)`（上游 attribution.ts 强制此行为）；`off` 关闭，其他值整体替换 |
 | `PI_DSH_MINIMAL_PERSONA_EXTRA` | 字符串 | 无 | 追加到 persona 后（引导语实验用，偏离字节级复刻） |
 | `PI_DSH_MINIMAL_FORCE` | `1` | 无 | 绕过模型门控（机制验证用） |
+| `PI_DSH_MINIMAL_DEBUG` | `1` | 无 | 把每次发出的请求头写入 `/tmp/dsh-ua-debug.log`（验证 UA 改写） |
 
 ## 消融记录（deepseek-v4-pro，同题 n=4~6，首轮 minimal-like 占比）
 
@@ -75,3 +76,13 @@ session_start（命中门控）
 
 与 DeepSeek 无关，非官方工具。DSH 文本摘录自本地
 `../deepseek-harness` 仓库，上游变更需同步。
+
+## 安装
+
+```bash
+pi -e ./src/index.ts
+```
+
+## License
+
+MIT

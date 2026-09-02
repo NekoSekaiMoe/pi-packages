@@ -9,6 +9,8 @@ The package contains four independent pieces:
 3. a provider-based observation tool named `observe`; and
 4. a compact-thinking mode that replaces the raw thinking stream with a ≤3-line summary.
 
+The nudge is keyed on a tool named `subagent` (as registered by `pi-subagents`); if your subagent extension names its tool differently (e.g. `subagent_spawn`), the nudge stays silent.
+
 ## Installation
 
 ```bash
@@ -21,7 +23,7 @@ For local development from this package directory:
 pi -e ./src/index.ts
 ```
 
-There are no slash commands or configuration files. All three components register when the extension loads.
+There is no configuration file to edit. All four components register when the extension loads; the only slash command is `/compact-thinking` (see below), which persists its state in `<agentDir>/pi-smart-flow.json`.
 
 ## Relationship to `pi-subagents`
 

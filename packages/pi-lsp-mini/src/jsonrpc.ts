@@ -20,7 +20,7 @@ type RequestHandler = (params: unknown) => unknown;
 const CRLF_CRLF = Buffer.from("\r\n\r\n");
 
 export class RpcConnection {
-	private buffer = Buffer.alloc(0);
+	private buffer: Buffer<ArrayBufferLike> = Buffer.alloc(0);
 	private nextId = 1;
 	private readonly pending = new Map<number, { resolve: (v: unknown) => void; reject: (e: Error) => void }>();
 	private readonly notificationHandlers = new Map<string, NotificationHandler>();

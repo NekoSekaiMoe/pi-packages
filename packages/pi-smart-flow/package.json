@@ -24,12 +24,7 @@
     ]
   },
   "dependencies": {
-    "@juicesharp/rpiv-advisor": "^2.4.0",
-    "@juicesharp/rpiv-ask-user-question": "^2.4.0",
-    "pi-web-access": "^0.13.0",
-    "typebox": "^1.1.24",
-    "version": "^0.1.2",
-    "view": "^1.1.1"
+    "typebox": "^1.1.24"
   },
   "devDependencies": {
     "@earendil-works/pi-agent-core": "*",

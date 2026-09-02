@@ -36,7 +36,7 @@ interface RegisteredTool {
 		params: Record<string, unknown>,
 		signal: AbortSignal | undefined,
 		onUpdate: unknown,
-		ctx: { mode: TestMode },
+		ctx: { mode: TestMode; hasUI?: boolean; ui?: unknown },
 	) => Promise<ExecuteResult>;
 }
 

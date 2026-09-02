@@ -52,7 +52,9 @@ export default function subagentMini(pi: ExtensionAPI): void {
 	const jobs = new Map<string, Job>();
 	let counter = 0;
 	const piBin = resolvePiBin();
-	let uiRef: { setWidget(key: string, content: unknown, options?: unknown): void } | undefined;
+	/** Narrow UI surface this extension needs (ctx.ui satisfies it in TUI mode). */
+	type UiLike = { setWidget(key: string, content: unknown, options?: unknown): void };
+	let uiRef: UiLike | undefined;
 	let widgetTimer: NodeJS.Timeout | undefined;
 
 	const widgetLines = (): string[] | undefined => {
@@ -203,7 +205,7 @@ export default function subagentMini(pi: ExtensionAPI): void {
 	};
 
 	pi.on("session_start", async (_event, ctx) => {
-		uiRef = ctx.ui as typeof uiRef;
+		uiRef = ctx.ui as UiLike;
 	});
 
 	pi.on("session_shutdown", async () => {
@@ -236,7 +238,7 @@ export default function subagentMini(pi: ExtensionAPI): void {
 			jobId: Type.Optional(Type.String({ description: "wait/status/kill: job id" })),
 		}),
 		async execute(_toolCallId, params, signal, _onUpdate, ctx) {
-			if (!uiRef) uiRef = ctx.ui as typeof uiRef;
+			if (!uiRef) uiRef = ctx.ui as UiLike;
 			if (params.action === "spawn") {
 				if (!params.task?.trim()) return textResult("spawn requires 'task'");
 				const running = [...jobs.values()].filter((j) => j.status === "running").length;

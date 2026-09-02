@@ -4,14 +4,14 @@
  * A lightweight delegation experience layer on top of pi-subagents:
  *
  * - nudge.ts     appends delegation guidance to the system prompt (only when
- *                the subagent tool is active)
+ *                the subagent_spawn tool is active)
  * - bash-bg.ts   adaptive foreground/background shell with job control
- * - observe.ts   blocking status/wait/watch over observation providers
+ *                (observation.ts stays as its internal provider/wait engine)
  * - compact-thinking.ts   hides raw thinking blocks and shows a ≤3-line
  *                summary instead (toggle: /compact-thinking)
  *
  *   pi -e ./src/index.ts
- *   pi install npm:@NekoSekaiMoe/pi-smart-flow
+ *   pi install npm:@NekoSekaiMoe/pi-smart-flow-lite
  */
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";

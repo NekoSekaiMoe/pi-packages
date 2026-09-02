@@ -35,7 +35,7 @@ Built-in (auto-enabled if the binary is on PATH):
 
 | id | binaries | files |
 | --- | --- | --- |
-| typescript | `typescript-language-server --stdio` | .ts .tsx .js .jsx ... |
+| typescript | `typescript-language-server --stdio`, fallback `vtsls --stdio` | .ts .tsx .js .jsx ... |
 | python | `pyright-langserver --stdio` or `pylsp` | .py .pyi |
 | go | `gopls` | .go |
 | rust | `rust-analyzer` | .rs |
@@ -61,13 +61,26 @@ inline args allowed, absolute paths supported), `args`, `include` (extensions),
 
 ## Install
 
-This package lives in `~/.pi/agent/packages/pi-lsp-mini` and is referenced from
-`~/.pi/agent/settings.json` → `"packages": ["./packages/pi-lsp-mini"]`.
+From this repository:
+
+```bash
+pi -e ./packages/pi-lsp-mini/src/index.ts
+```
+
+The extension has no runtime npm dependencies — the only requirement is that the
+language-server binaries you want are on PATH (or configured in
+`~/.pi/agent/lsp.json`).
 
 ## Notes
 
 - Prompt budget: all 5 tools cost ~660 request tokens (schemas serialized).
   Tool texts live in `src/schemas.ts` — keep them lean when editing.
+
+- TypeScript note: neither `tsserver` nor `tsc` is an LSP server — `tsserver
+  --stdio` speaks tsserver's own protocol, not LSP, and an LSP client will
+  time out on `initialize`. That's why the typescript entry uses LSP wrappers
+  around tsserver (`typescript-language-server`, or `vtsls` which ships with
+  some global installs) instead of `tsserver` itself.
 
 - Delete heuristics: only *standalone* statement lines (`foo(x);`, `await foo()`,
   `defer foo()`, multi-line argument lists) are removed automatically. Usages in

@@ -1,14 +1,27 @@
 {
   "name": "pi-web-lite",
   "version": "0.1.0",
-  "description": "Minimal webfetch tool: URL -> markdown. Fallbacks: Gemini Web -> Gemini API -> Tavily.",
+  "description": "Minimal web access tools: webfetch (URL -> markdown with Gemini/Tavily fallbacks) and websearch (Exa).",
   "type": "module",
+  "license": "MIT",
   "pi": {
     "extensions": ["./src/index.ts"]
   },
+  "files": [
+    "src/",
+    "README.md"
+  ],
   "dependencies": {
     "@mozilla/readability": "^0.6.0",
     "linkedom": "^0.18.0",
-    "turndown": "^7.2.0"
+    "turndown": "^7.2.0",
+    "typebox": "^1.3.24"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@types/turndown": "^5.0.6"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
   }
 }

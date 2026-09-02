@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildGui, type Todo } from "../model";
+import { buildGui, type Todo, type TreeItem } from "../model";
 
 describe("buildGui", () => {
 	it("maps 4 statuses to list-tree with correct icons", () => {
@@ -13,7 +13,7 @@ describe("buildGui", () => {
 		const gui = buildGui(todos);
 		expect(gui.v).toBe(1);
 		expect(gui.component.type).toBe("list-tree");
-		const items = gui.component.props.items;
+		const items = gui.component.props.items as TreeItem[];
 		expect(items).toHaveLength(4);
 		// pending → dot, no status（guiResult 的 stripUndefined 删除 undefined 键）
 		expect(items[0]).toMatchObject({ icon: "dot", label: "#1: pending task", depth: 0 });
@@ -34,6 +34,6 @@ describe("buildGui", () => {
 	it("isVerification todo still maps correctly", () => {
 		const todos: Todo[] = [{ id: 1, text: "verify", status: "pending", isVerification: true }];
 		const gui = buildGui(todos);
-		expect(gui.component.props.items[0]).toMatchObject({ icon: "dot", label: "#1: verify" });
+		expect((gui.component.props.items as TreeItem[])[0]).toMatchObject({ icon: "dot", label: "#1: verify" });
 	});
 });
