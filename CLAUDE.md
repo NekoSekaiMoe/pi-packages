@@ -1,51 +1,30 @@
-# CLAUDE.md
+# Repository Guidelines
 
-Guidance for Claude Code and other AI agents working in this repository.
+## Project Structure & Module Organization
 
-## What this is
+Yarn workspaces monorepo of extensions for the Pi coding agent. Each directory under `packages/` (e.g. `pi-extra-cmd`, `pi-ui`, `pi-smart-flow`, `pi-todo-mini`) is an independent, separately published package. Source lives in `src/index.ts` per package (`pi-todo-mini` uses a root `index.ts` re-exporting `src/index.ts`, with tests in `src/__tests__/`). There is no build output — Pi runs the `.ts` source directly via jiti. Shared config sits at the root (`package.json`, `tsconfig.base.json`, `yarn.lock`).
 
-A yarn-workspaces monorepo of extensions ("packages") for the [Pi coding agent](https://github.com/earendil-works/pi-coding-agent), published under the `@NekoSekaiMoe/*` scope.
+## Build, Test, and Development Commands
 
-- `packages/pi-extra-cmd` — extra slash commands: `/exit` (alias for the built-in `/quit`), `/init` (injects an `AGENTS.md`-generation prompt), and `/context` (context-window usage + per-category composition breakdown).
-- `packages/pi-fake-codex` — impersonates Codex CLI for Responses-API requests and adds an `apply_patch` tool.
-- `packages/pi-smart-edit` — hashline-style line-anchored editing: `[path#TAG]` content-hash anchors on read results and a `hash_edit` patch tool that rejects stale anchors.
-- `packages/pi-smart-flow` — lightweight delegation experience (delegation nudge, `bash_bg`, `observe`, compact-thinking summaries).
-- `packages/pi-ui` — reskins the interactive TUI with Codex-style gradient, working shimmer, and flat tool rows.
+- `yarn install` — install workspace dependencies.
+- `yarn typecheck` — run `tsgo --noEmit` across all packages; this is the primary verification gate.
+- `yarn workspace todo-lite run test` — run the vitest unit tests shipped by `pi-todo-mini`.
+- `pi -e ./packages/<name>/src/index.ts` — live-test an extension inside a real Pi session.
 
-## How Pi loads extensions
+There is no build, lint, or format step.
 
-- An extension is a TypeScript module with a **default export** `(pi: ExtensionAPI) => void`.
-- The entry point is declared in the package's `package.json` under `pi.extensions`, e.g. `"pi": { "extensions": ["./src/index.ts"] }`.
-- Pi runs the `.ts` source **directly via jiti** — there is **no build/emit step**. Do not add a bundler or expect a `dist/`.
-- `@typescript/native-preview` (the `tsgo` binary) is used **for type-checking only**.
-- Import types from `@earendil-works/pi-coding-agent` (the installed package, currently v0.84.1). At runtime Pi also aliases `@mariozechner/pi-coding-agent` to the same module, so either specifier resolves — prefer `@earendil-works/*` since that is what is on disk.
+## Coding Style & Naming Conventions
 
-## Commands
+- TypeScript strict mode, 2-space indent (see `tsconfig.base.json`); `verbatimModuleSyntax` requires `import type` for type-only imports.
+- Each entry point default-exports an extension factory: `export default function (pi: ExtensionAPI): void`.
+- New packages go in `packages/pi-<name>/`, named `@NekoSekaiMoe/pi-<name>`, with a `pi.extensions` entry, `license: "BSD-2-Clause"`, `files: ["src/", "README.md"]`, and a `tsconfig.json` extending `../../tsconfig.base.json`.
+- Every `@earendil-works/*` import must be declared in both `devDependencies` and `peerDependencies` as `"*"` (the Pi host provides them at runtime).
+- Root `resolutions` pins all `@earendil-works/*` packages to 0.84.1 — bump these pins together.
 
-```bash
-yarn install      # install workspace deps
-yarn typecheck    # tsgo --noEmit -p tsconfig.base.json
-```
+## Testing Guidelines
 
-There is no test suite yet, and no build. Verification = `yarn typecheck` passing clean.
+No repo-wide test suite; coverage requirements do not apply. Verification means `yarn typecheck` passing clean plus interactive testing in Pi, since `pi install` and live commands need a real session. For `pi-todo-mini`, add tests under `src/__tests__/` named `*.test.ts` and run `yarn workspace todo-lite run test`.
 
-## Conventions
+## Commit & Pull Request Guidelines
 
-- TypeScript, 2-space indent, strict mode (see `tsconfig.base.json`).
-- Each package extends the root `tsconfig.base.json`.
-- Keep extensions small and single-purpose: register one command/handler, delegate to documented `ExtensionAPI` methods (`registerCommand`, `ctx.shutdown()`, `pi.sendUserMessage`, …) rather than reaching into internals.
-- Every `@earendil-works/*` package a package imports from (including `pi-tui`, `pi-ai`, `pi-agent-core`) must be declared in both `devDependencies` and `peerDependencies` as `"*"` — the pi host provides them at runtime (see `pi-smart-flow` for the pattern).
-- License is **BSD-2-Clause** across all packages. Keep the `license` field and README footer consistent when adding a package.
-
-## Adding a new package
-
-1. Create `packages/pi-<name>/` with `package.json` (name `@NekoSekaiMoe/pi-<name>`, `pi.extensions` entry, `license: BSD-2-Clause`, `files: ["src/", "README.md"]`).
-2. Add `tsconfig.json` extending `../../tsconfig.base.json`.
-3. Write `src/index.ts` with the default-export factory, and a `README.md`.
-4. Run `yarn typecheck`.
-
-## Caveats
-
-- `/quit` is a built-in command name and cannot be shadowed; that is why the alias is `/exit`.
-- The root `package.json` pins `@earendil-works/pi-coding-agent`, `@earendil-works/pi-tui`, `@earendil-works/pi-agent-core`, and `@earendil-works/pi-ai` to **0.84.1** via `resolutions`. Without the pins, fresh installs hoist the latest for the `*` ranges next to a stale nested copy, and type identity across the two copies (private fields) breaks `yarn typecheck`. Bump the pins together.
-- End-to-end behavior (`pi install`, running commands live) requires a real Pi session and cannot be verified by typecheck alone.
+History has no enforced convention; the prevailing useful pattern is `package: imperative summary`, e.g. `pi-ui: flatten pi-subagents async widget into Codex-style rows`. Keep commits scoped to one package where practical. PRs should state what changed and which packages are affected, call out any behavior or security implications, and confirm `yarn typecheck` passes.
