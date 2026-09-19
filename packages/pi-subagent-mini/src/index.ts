@@ -1,8 +1,14 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { Type } from "typebox";
 import { getPackageDir, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
+
+// jiti (pi's TS loader) injects CJS wrapper params (__dirname/__filename) into
+// transpiled ESM modules, while import.meta.url becomes an inlined data: URL.
+// Declared optional so this also type-checks under real ESM.
+declare const __dirname: string | undefined;
 
 /**
  * pi-subagent-mini — one tool, four actions.
@@ -16,6 +22,14 @@ const DEFAULT_TIMEOUT_SEC = 600;
 const MAX_REPORT_CHARS = 6000;
 /** Same widget key pi-subagents uses, so pi-ui's flat skin picks this up too. */
 const WIDGET_KEY = "subagent-async";
+
+/**
+ * Sibling packages auto-forwarded to children via `-e` (extension discovery is
+ * otherwise disabled with `-ne`). pi-fake-opencode spoofs the OpenCode client
+ * headers so OpenCode Zen's free tier works outside the OpenCode app — without
+ * it, children using an `opencode` model get 403 FreeTierError.
+ */
+const FORWARDED_EXTENSION_PACKAGES = ["pi-fake-opencode"];
 
 interface Job {
 	id: string;
@@ -48,13 +62,44 @@ function textOf(message: { content?: Array<{ type: string; text?: string }> }): 
 	return (message.content ?? []).filter((b) => b.type === "text").map((b) => b.text ?? "").join("\n").trim();
 }
 
+/** Directory containing this extension's source file, best-effort. */
+function ownDir(): string | undefined {
+	if (typeof __dirname === "string" && __dirname) return __dirname; // jiti
+	try {
+		const url = (import.meta as { url?: string }).url;
+		if (url && url.startsWith("file:")) return path.dirname(fileURLToPath(url)); // real ESM
+	} catch {
+		// data:/blob URL or unsupported scheme
+	}
+	return undefined;
+}
+
+/**
+ * Extensions to load in child sessions. Priority:
+ *   1. spawn param `extensions` (comma-separated entry files)
+ *   2. `PI_SUBAGENT_EXTENSIONS` env var (comma-separated entry files)
+ *   3. auto-detected sibling packages (FORWARDED_EXTENSION_PACKAGES)
+ */
+function defaultChildExtensions(): string[] {
+	const raw = process.env.PI_SUBAGENT_EXTENSIONS;
+	if (raw !== undefined) return raw.split(",").map((s) => s.trim()).filter(Boolean); // set-but-empty = forward nothing
+	const found: string[] = [];
+	const here = ownDir();
+	for (const name of FORWARDED_EXTENSION_PACKAGES) {
+		const rel = here && path.resolve(here, "..", name, "src", "index.ts");
+		const home = process.env.HOME && path.join(process.env.HOME, ".pi", "agent", "packages", name, "src", "index.ts");
+		// Prefer the sibling of this package; fall back to the standard agent-dir layout.
+		const candidate = (rel && fs.existsSync(rel) && rel) || (home && fs.existsSync(home) && home);
+		if (candidate) found.push(candidate);
+	}
+	return found;
+}
+
 export default function subagentMini(pi: ExtensionAPI): void {
 	const jobs = new Map<string, Job>();
 	let counter = 0;
 	const piBin = resolvePiBin();
-	/** Narrow UI surface this extension needs (ctx.ui satisfies it in TUI mode). */
-	type UiLike = { setWidget(key: string, content: unknown, options?: unknown): void };
-	let uiRef: UiLike | undefined;
+	let uiRef: { setWidget(key: string, content: unknown, options?: unknown): void } | undefined;
 	let widgetTimer: NodeJS.Timeout | undefined;
 
 	const widgetLines = (): string[] | undefined => {
@@ -110,7 +155,7 @@ export default function subagentMini(pi: ExtensionAPI): void {
 		}
 	};
 
-	const spawnJob = (params: { task: string; tools?: string; cwd?: string; model?: string; timeoutSec?: number }, ctxCwd: string): Job => {
+	const spawnJob = (params: { task: string; tools?: string; cwd?: string; model?: string; extensions?: string[]; timeoutSec?: number }, ctxCwd: string): Job => {
 		const id = `sa-${++counter}`;
 		const args = [
 			...piBin.args,
@@ -118,7 +163,10 @@ export default function subagentMini(pi: ExtensionAPI): void {
 			"--no-skills", "--no-prompt-templates", "--no-context-files",
 			"-t", params.tools || DEFAULT_TOOLS,
 		];
-		if (params.model) args.push("-m", params.model);
+		if (params.model) args.push("--model", params.model); // no -m short flag exists
+		// -ne disables discovery but explicit -e paths still load — forward only
+		// what children need (e.g. OpenCode Zen header spoofing).
+		for (const ext of params.extensions ?? []) args.push("-e", ext);
 		args.push(`Task: ${params.task}`);
 
 		const proc = spawn(piBin.cmd, args, {
@@ -127,7 +175,7 @@ export default function subagentMini(pi: ExtensionAPI): void {
 			stdio: ["ignore", "pipe", "pipe"],
 		});
 
-		let lastAssistant: { text: string; usage?: { input: number; output: number } } | undefined;
+		let lastAssistant: { text: string; usage?: { input: number; output: number }; stopReason?: string; errorMessage?: string } | undefined;
 		let stderrTail = "";
 		let settled = false;
 
@@ -143,6 +191,17 @@ export default function subagentMini(pi: ExtensionAPI): void {
 		const finish = (status: Job["status"], errorMessage?: string): void => {
 			if (settled) return;
 			settled = true;
+			// A zero exit code does not mean the child succeeded: API/auth failures
+			// surface as an assistant message with stopReason "error" and no content.
+			if (status === "completed") {
+				if (lastAssistant?.stopReason === "error") {
+					status = "failed";
+					errorMessage = `model error${lastAssistant.errorMessage ? `: ${lastAssistant.errorMessage}` : " (stopReason: error)"}`;
+				} else if (!lastAssistant?.text) {
+					status = "failed";
+					errorMessage = `no assistant output${lastAssistant?.errorMessage ? `: ${lastAssistant.errorMessage}` : stderrTail ? `: ${stderrTail.trim()}` : ""}`;
+				}
+			}
 			job.status = status;
 			job.errorMessage = errorMessage;
 			job.finalOutput = lastAssistant?.text ?? "";
@@ -164,12 +223,14 @@ export default function subagentMini(pi: ExtensionAPI): void {
 				try {
 					const event = JSON.parse(line) as {
 						type: string;
-						message?: { role: string; content?: Array<{ type: string; text?: string }>; usage?: { input: number; output: number }; stopReason?: string };
+						message?: { role: string; content?: Array<{ type: string; text?: string }>; usage?: { input: number; output: number }; stopReason?: string; errorMessage?: string };
 					};
 					if (event.type === "message_end" && event.message?.role === "assistant" && event.message.stopReason && event.message.stopReason !== "pending") {
 						lastAssistant = {
 							text: textOf(event.message),
 							usage: event.message.usage ? { input: event.message.usage.input ?? 0, output: event.message.usage.output ?? 0 } : undefined,
+							stopReason: event.message.stopReason,
+							errorMessage: event.message.errorMessage,
 						};
 					}
 				} catch {
@@ -185,7 +246,7 @@ export default function subagentMini(pi: ExtensionAPI): void {
 			if (settled) return;
 			if (code === 0 && lastAssistant) finish("completed");
 			else if (code === 0) finish("failed", `no assistant output${stderrTail ? `: ${stderrTail.trim()}` : ""}`);
-			else finish("failed", `exit ${code}${stderrTail ? `: ${stderrTail.trim()}` : ""}`);
+			else finish("failed", `exit ${code}${lastAssistant?.errorMessage ? `: ${lastAssistant.errorMessage}` : stderrTail ? `: ${stderrTail.trim()}` : ""}`);
 		});
 
 		const timeoutSec = params.timeoutSec ?? DEFAULT_TIMEOUT_SEC;
@@ -205,7 +266,7 @@ export default function subagentMini(pi: ExtensionAPI): void {
 	};
 
 	pi.on("session_start", async (_event, ctx) => {
-		uiRef = ctx.ui as UiLike;
+		uiRef = ctx.ui as typeof uiRef;
 	});
 
 	pi.on("session_shutdown", async () => {
@@ -233,19 +294,26 @@ export default function subagentMini(pi: ExtensionAPI): void {
 			task: Type.Optional(Type.String({ description: "spawn: full task incl. role (e.g. 'You are a reviewer…')" })),
 			tools: Type.Optional(Type.String({ description: `spawn: comma list, default ${DEFAULT_TOOLS}` })),
 			cwd: Type.Optional(Type.String({ description: "spawn: working directory" })),
-			model: Type.Optional(Type.String({ description: "spawn: model id" })),
+			model: Type.Optional(Type.String({ description: "spawn: model id (provider/model); defaults to the current session model" })),
+			extensions: Type.Optional(Type.String({ description: "spawn: comma-separated extension entry files to load in the child (e.g. pi-fake-opencode for OpenCode Zen free tier); default: auto-detect" })),
 			timeoutSec: Type.Optional(Type.Number({ description: "spawn: max seconds, default 600" })),
 			jobId: Type.Optional(Type.String({ description: "wait/status/kill: job id" })),
 		}),
 		async execute(_toolCallId, params, signal, _onUpdate, ctx) {
-			if (!uiRef) uiRef = ctx.ui as UiLike;
+			if (!uiRef) uiRef = ctx.ui as typeof uiRef;
 			if (params.action === "spawn") {
 				if (!params.task?.trim()) return textResult("spawn requires 'task'");
 				const running = [...jobs.values()].filter((j) => j.status === "running").length;
 				if (running >= MAX_CONCURRENT) return textResult(`concurrency limit: ${running}/${MAX_CONCURRENT} subagents running; wait or kill one first`);
-				const job = spawnJob({ task: params.task, tools: params.tools, cwd: params.cwd, model: params.model, timeoutSec: params.timeoutSec }, ctx.cwd);
+				// Children inherit the session's current model by default; without this they
+				// fall back to settings.json defaults, which may be stale or unusable.
+				const model = params.model || (ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : undefined);
+				const extensions = params.extensions !== undefined
+					? params.extensions.split(",").map((s) => s.trim()).filter(Boolean) // empty = forward none
+					: defaultChildExtensions();
+				const job = spawnJob({ task: params.task, tools: params.tools, cwd: params.cwd, model, extensions, timeoutSec: params.timeoutSec }, ctx.cwd);
 				return textResult(
-					`subagent ${job.id} spawned (cwd: ${params.cwd || ctx.cwd}, tools: ${params.tools || DEFAULT_TOOLS}).\n` +
+					`subagent ${job.id} spawned (cwd: ${params.cwd || ctx.cwd}, tools: ${params.tools || DEFAULT_TOOLS}, model: ${model || "default"}${extensions.length ? `, +${extensions.length} ext` : ""}).\n` +
 					"A subagent-complete notification with its report arrives when done — continue other work meanwhile. action=status peeks, action=wait blocks, action=kill stops it.",
 				);
 			}
