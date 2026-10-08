@@ -11,10 +11,10 @@
     "typecheck": "tsgo --noEmit -p tsconfig.base.json"
   },
   "resolutions": {
-    "@earendil-works/pi-tui": "0.85.1",
-    "@earendil-works/pi-agent-core": "0.85.1",
-    "@earendil-works/pi-coding-agent": "0.85.1",
-    "@earendil-works/pi-ai": "0.85.1"
+    "@earendil-works/pi-tui": "1.1.0",
+    "@earendil-works/pi-agent-core": "1.1.0",
+    "@earendil-works/pi-coding-agent": "1.1.0",
+    "@earendil-works/pi-ai": "1.1.0"
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "*",
