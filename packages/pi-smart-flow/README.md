@@ -76,7 +76,7 @@ Use `run` when command duration is uncertain:
 ```json
 {
   "action": "run",
-  "command": "yarn typecheck",
+  "command": "pnpm typecheck",
   "timeout": 30
 }
 ```
@@ -86,7 +86,7 @@ Use `start` for servers, watchers, log followers, and clearly long-running work:
 ```json
 {
   "action": "start",
-  "command": "yarn dev",
+  "command": "pnpm dev",
   "cwd": "/workspace/project"
 }
 ```

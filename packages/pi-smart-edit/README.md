@@ -66,7 +66,7 @@ The built-in `edit` tool stays active as a fallback. If you prefer hashline-only
 ## Caveats
 
 - The middleware re-reads each file after `read`/`write`/`edit` results to record snapshots; files are warm in the OS page cache, so this is cheap, but it only works for local paths.
-- `yarn typecheck` verifies types only. End-to-end validation requires a real Pi session.
+- `pnpm typecheck` verifies types only. End-to-end validation requires a real Pi session.
 
 ## License
 

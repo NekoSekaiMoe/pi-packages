@@ -300,7 +300,7 @@ export default function subagentMini(pi: ExtensionAPI): void {
 			jobId: Type.Optional(Type.String({ description: "wait/status/kill: job id" })),
 		}),
 		async execute(_toolCallId, params, signal, _onUpdate, ctx) {
-			if (!uiRef) uiRef = ctx.ui as typeof uiRef;
+			if (!uiRef) uiRef = ctx.ui as unknown as typeof uiRef;
 			if (params.action === "spawn") {
 				if (!params.task?.trim()) return textResult("spawn requires 'task'");
 				const running = [...jobs.values()].filter((j) => j.status === "running").length;

@@ -124,7 +124,13 @@ Example shape:
 
 Despite its name, this tool does **not** accept unified diff text. Each `oldText` must match exactly and uniquely according to Pi's edit-tool rules. Multiple disjoint replacements for one file should be sent in one call, and all replacements are matched against the original file content.
 
-The alias is useful for Codex-oriented prompts that expect an `apply_patch` tool name. It is independent of provider impersonation.
+### API-scoped declaration
+
+The alias is declared only to models whose `model.api` is `openai-responses` or `openai-codex-responses` — the same scope as the identity headers. On other protocols (Anthropic, Google, Bedrock, …) the tool is removed from the active tool set at session start and on every model switch, so non-Responses models never see it in their tool list. Switching back re-declares it.
+
+The tool remains registered and callable while hidden; only the model-facing declaration is gated. Re-activation only happens when this extension was the one that removed it, so explicitly disabling `apply_patch` (via `/tools`, `--tools`, or settings) stays disabled across model switches.
+
+The alias is useful for Codex-oriented prompts that expect an `apply_patch` tool name. Its declaration is scoped to the impersonated APIs described above.
 
 ## Feature 4: Codex-compatible command hooks
 

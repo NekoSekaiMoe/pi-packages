@@ -1,0 +1,34 @@
+{
+  "name": "@NekoSekaiMoe/pi-codex-compact",
+  "version": "0.1.0",
+  "description": "Codex-style context compaction for pi: handoff-framed summaries, verbatim retention of recent user messages across the cut point, rolling file lists, and a post-compaction accuracy warning",
+  "license": "BSD-2-Clause",
+  "author": "NekoSekaiMoe",
+  "keywords": [
+    "pi",
+    "pi-coding-agent",
+    "pi-extension",
+    "pi-package",
+    "codex",
+    "compaction",
+    "context",
+    "summarization"
+  ],
+  "files": [
+    "src/",
+    "README.md"
+  ],
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*"
+  }
+}

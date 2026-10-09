@@ -73,8 +73,9 @@ See each package README for behavior, configuration, compatibility notes, and se
 │   ├── pi-ui/
 │   └── pi-web-lite/
 ├── package.json
-├── tsconfig.base.json
-└── yarn.lock
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
+└── tsconfig.base.json
 ```
 
 Every package declares its TypeScript entry point in `package.json`:
@@ -93,19 +94,19 @@ Every package declares its TypeScript entry point in `package.json`:
 
 Requirements:
 
-- Yarn with workspace support
+- pnpm 12+ (workspace mode; `packageManager` is pinned in `package.json`)
 - A local Pi installation for interactive testing
 
 Install dependencies and type-check the entire workspace:
 
 ```bash
-yarn install
-yarn typecheck
+pnpm install
+pnpm typecheck
 ```
 
-`pi-todo-mini` additionally ships vitest unit tests (`yarn workspace todo-lite run test`).
+`pi-todo-mini` additionally ships vitest unit tests (`pnpm --filter todo-lite run test`).
 
-There is no build step. The repository uses `@typescript/native-preview` (`tsgo`) for type-checking only; end-to-end behavior (`pi install`, live commands) requires a real Pi session.
+There is no build step. The repository uses TypeScript 7's native compiler (`tsc`) for type-checking only; end-to-end behavior (`pi install`, live commands) requires a real Pi session.
 
 A package entry point must default-export an extension factory:
 
@@ -132,7 +133,7 @@ Most packages rely on documented extension APIs. `pi-ui` additionally uses guard
 3. Add `tsconfig.json` extending `../../tsconfig.base.json`.
 4. Implement the default-exported extension factory in `src/index.ts`.
 5. Document installation, behavior, configuration, limitations, and security implications.
-6. Run `yarn typecheck`.
+6. Run `pnpm typecheck`.
 
 ## License
 

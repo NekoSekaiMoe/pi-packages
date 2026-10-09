@@ -12,14 +12,24 @@
  * accepts `path` + one-or-more `edits[].oldText` / `edits[].newText` pairs
  * rather than unified-diff text.
  *
+ * The alias is only declared to models whose API we impersonate as Codex
+ * (`openai-responses`, `openai-codex-responses`). On every session start and
+ * model switch we remove it from the active tool set when the current model
+ * speaks another protocol, and re-add it when switching back (but only when we
+ * were the ones who removed it, so an explicit user deactivation sticks). The
+ * tool stays registered and callable in both states; only the model-facing
+ * declaration is gated.
+ *
  * This is unrelated to the header/body Codex impersonation in `index.ts`; it
- * lives in this package purely as a packaging decision. It is registered as a
- * plain tool and can be ignored by anyone who only wants the impersonation.
+ * lives in this package purely as a packaging decision.
  */
 
 import { createEditToolDefinition, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
-/** Register the `apply_patch` editing alias on the given extension API. */
+/** APIs whose traffic we impersonate as Codex CLI — `apply_patch` rides along. */
+export const CODEX_APIS = new Set(["openai-responses", "openai-codex-responses"]);
+
+/** Register the `apply_patch` editing alias, scoped to Codex-impersonated APIs. */
 export function registerApplyPatchTool(pi: ExtensionAPI): void {
   const edit = createEditToolDefinition(process.cwd());
   pi.registerTool({
@@ -35,4 +45,27 @@ export function registerApplyPatchTool(pi: ExtensionAPI): void {
       "Keep apply_patch edits[].oldText as small as possible while still being unique in the file. Do not pad with large unchanged regions.",
     ],
   });
+
+  // `removedByUs` distinguishes "inactive because we hid it for this model"
+  // from "inactive because the user turned it off": we only re-add the former.
+  let removedByUs = false;
+
+  const sync = (model: { api?: string } | undefined): void => {
+    const wanted = !!model?.api && CODEX_APIS.has(model.api);
+    const active = pi.getActiveTools();
+    const has = active.includes("apply_patch");
+    if (!wanted && has) {
+      pi.setActiveTools(active.filter((name) => name !== "apply_patch"));
+      removedByUs = true;
+    } else if (wanted && !has && removedByUs) {
+      pi.setActiveTools([...active, "apply_patch"]);
+      removedByUs = false;
+    }
+  };
+
+  // Fires after the tool registry is bound: hides the alias when the session's
+  // model is not a Codex-impersonated Responses API.
+  pi.on("session_start", (_event, ctx) => sync(ctx.model));
+  // Fires on /model switches and programmatic setModel().
+  pi.on("model_select", (event) => sync(event.model));
 }

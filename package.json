@@ -4,20 +4,13 @@
   "private": true,
   "description": "Pi coding agent extensions by @NekoSekaiMoe",
   "license": "BSD-2-Clause",
-  "workspaces": [
-    "packages/*"
-  ],
+  "packageManager": "pnpm@12.3.1",
   "scripts": {
-    "typecheck": "tsgo --noEmit -p tsconfig.base.json"
-  },
-  "resolutions": {
-    "@earendil-works/pi-tui": "1.1.0",
-    "@earendil-works/pi-agent-core": "1.1.0",
-    "@earendil-works/pi-coding-agent": "1.1.0",
-    "@earendil-works/pi-ai": "1.1.0"
+    "typecheck": "tsc --noEmit -p tsconfig.base.json"
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "*",
+    "@types/node": "^24.0.0",
     "typescript": "^7.0.2",
     "typebox": "^1.3.24"
   }

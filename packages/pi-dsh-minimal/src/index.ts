@@ -590,6 +590,10 @@ export default function (pi: ExtensionAPI) {
               writeFileSync(path, after, "utf8");
               return textResult(`The file ${path} has been edited successfully.`);
             }
+            default:
+              // Unreachable for schema-validated input; keeps execute total
+              // (a silent undefined return would fail the tool contract).
+              throw new Error(`Unknown command: ${String(params.command)}`);
           }
         },
       })

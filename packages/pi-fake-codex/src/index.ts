@@ -50,13 +50,12 @@
  */
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { registerApplyPatchTool } from "./apply-patch.ts";
+import { CODEX_APIS, registerApplyPatchTool } from "./apply-patch.ts";
 import { buildOriginator, buildUserAgent } from "./headers.ts";
 import { registerCodexHookAdapter } from "./hooks/adapter.ts";
 import { codexifyResponsesPayload } from "./payload.ts";
 
-/** The two OpenAI Responses-style APIs whose *headers* we spoof as Codex CLI. */
-const CODEX_APIS = new Set(["openai-responses", "openai-codex-responses"]);
+export { CODEX_APIS };
 
 export default function (pi: ExtensionAPI): void {
   // `before_provider_headers` fires after request headers are assembled and
@@ -86,8 +85,9 @@ export default function (pi: ExtensionAPI): void {
   });
 
   // Register an `apply_patch` editing tool alias (same behavior as Pi's
-  // built-in `edit`, just named `apply_patch`). Unrelated to the impersonation
-  // above; lives here as a packaging decision. See `apply-patch.ts`.
+  // built-in `edit`, just named `apply_patch`), declared only while the
+  // session's model uses one of the Codex-impersonated Responses APIs above.
+  // See `apply-patch.ts`.
   registerApplyPatchTool(pi);
 
   // Codex-compatible hooks: executes `.pi/hooks.json` command hooks on Pi
